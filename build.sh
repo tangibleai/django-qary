@@ -10,6 +10,6 @@ else
     echo "Building development docker image ..."
     docker-compose -f docker-compose.yml up -d --build
     docker-compose -f docker-compose.yml exec web python manage.py migrate --no-input
-    echo "Starting development containers for the webapp at http://localhost/ ..."
+    echo "Starting development containers for the webapp at http://localhost:8000/ ..."
     docker-compose -f docker-compose.yml exec web python manage.py collectstatic --no-input --clear
 fi
