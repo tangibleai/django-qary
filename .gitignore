@@ -1,0 +1,11 @@
+# build files
+app/env/*
+*.pyc
+
+# secrets
+.env*
+
+# data
+*.gz
+*.sqlite*
+
