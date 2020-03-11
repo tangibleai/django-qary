@@ -16,11 +16,14 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 # copy django project from host (including requirements.txt) into container
 COPY . /usr/src/app/
 
-RUN pip install --upgrade pip && RUN pip install flake8
+RUN pip install --upgrade pip
+RUN pip install flake8
 # lint (PEP8 style check)
 # F401=unused import ; E501=line too long
 # SEE: flake8.pycqa.org/en/2.6.0/warnings.html#error-codes
-RUN flake8 --max-line-length=150 --ignore=E501,F401 .
+# COPY . /usr/src/app/
+RUN flake8 --exclude=env/ --ignore=E501,F401 .
+# RUN flake8 --max-line-length=150 --ignore=E501,F401 .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 
@@ -48,6 +51,11 @@ RUN apk update && apk add libpq
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
+# Step 21/27 : RUN pip install --upgrade pip
+#  ---> Running in 29dfb74c1632
+# The directory '/home/app/.cache/pip/http' or its parent directory is not owned by the current user and the cache has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
+# The directory '/home/app/.cache/pip' or its parent directory is not owned by the current user and caching wheels has been disabled. check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
+
 RUN pip install --no-cache /wheels/*
 
 COPY ./migrate_db.prod.sh $APP_HOME
