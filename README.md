@@ -1,3 +1,16 @@
+# Django-qary
+
+Web application, API, and Admin dashboard for the QAry cognitive search engine
+
+## Docker Containers
+
+- web: Django, Django REST Framework, nboost
+- nginx: Nginx web server for staticfiles, mediafiles, and /midata 
+- postgresql: Database for user credentials, profiles
+- elastic: ElasticSearch document database
+
+## Building Docker Images
+
 SEE: [testdriven.io](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/)
 
 To build and run the dev environment:
