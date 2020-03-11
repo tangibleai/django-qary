@@ -9,3 +9,6 @@ app/env/*
 *.gz
 *.sqlite*
 
+# web media and static files
+app/staticfiles/*
+app/mediafiels/*
