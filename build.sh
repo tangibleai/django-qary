@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+echo "STOPPING ALL CONTAINERS!!!"
+docker-compose down -v --remove-orphans
+
+
 if [ "$1" == 'prod' ]
 then
     echo "Building !PROD! docker image ..."

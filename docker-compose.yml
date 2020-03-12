@@ -6,6 +6,10 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./app/:/usr/src/app/
+      - type: volume
+        target: /home/app/web/midata
+        source: "midata"
+        read_only: true
     ports:
       - 8000:8000
     env_file:
@@ -21,3 +25,4 @@ services:
 
 volumes:
   postgres_data:
+  midata:
