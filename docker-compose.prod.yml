@@ -6,6 +6,7 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
+      - /tmp/midata:/home/app/web/midata
     ports:
       - 1337:80
     depends_on:
@@ -19,14 +20,6 @@ services:
     volumes:
       - "static_volume:/home/app/web/staticfiles"
       - "media_volume:/home/app/web/mediafiles"
-      # midata_volume:
-      #     - type: volume
-      #       source: /midata
-      #       target: /home/app/web/midata
-      #       read_only: true
-      #       volume:
-      #         nocopy: true
-      #       consistency: cached
     expose:
       - 8000
     env_file:
@@ -46,6 +39,6 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
-  # midata_volume:
+  midata:
 
 

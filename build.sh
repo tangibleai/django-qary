@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
+set -e
+
 echo "STOPPING ALL CONTAINERS!!!"
+
 docker-compose down -v --remove-orphans
 
 
