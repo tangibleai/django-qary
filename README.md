@@ -9,6 +9,17 @@ Web application, API, and Admin dashboard for the QAry cognitive search engine
 - postgresql: Database for user credentials, profiles
 - elastic: ElasticSearch document database
 
+## Install
+
+If you cloned the repo from gitlab you'll want to ignore your changes to .env.* files:
+
+```bash
+git update-index --skip-worktree -- .env.*
+```
+
+Then you can edit .env.dev and .env.prod to reflect your network settings and credentials without your secrects being tracked by git.
+
+
 ## Building Docker Images
 
 SEE: [testdriven.io](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/)
@@ -19,6 +30,8 @@ To build and run the dev environment:
 $ docker-compose down -v
 $ docker-compose -f docker-compose.yml up -d --build
 ```
+
+
 
 To build and run the production containers:
 
