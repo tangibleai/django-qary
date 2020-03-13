@@ -45,7 +45,7 @@ ENV HOME=/home/app
 ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles
 RUN mkdir -p $APP_HOME/mediafiles
-RUN mkdir -p $APP_HOME/midata
+# RUN mkdir -p $APP_HOME/midata
 WORKDIR $APP_HOME
 
 # install dependencies
