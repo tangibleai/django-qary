@@ -8,10 +8,15 @@ docker-compose down -v --remove-orphans
 
 if [ "$1" == 'prod' ]
 then
-    echo "Building !PROD! docker image ..."
+    echo "removing 'midata' docker volume"
     docker volume rm -f midata
+    echo
+    echo "Building PROD docker image ..."
     docker-compose -f docker-compose.prod.yml up -d --build
+    echo
+    echo "Migrating PROD db ..."
     docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --no-input
+    echo
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
     docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --no-input --clear
 else

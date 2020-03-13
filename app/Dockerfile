@@ -2,7 +2,7 @@
 FROM python:3.7.0-alpine
 
 # create directory for the app user
-RUN mkdir -p /home/app
+RUN mkdir -p /home/app/midata
 
 # set work directory
 WORKDIR /usr/src/app
