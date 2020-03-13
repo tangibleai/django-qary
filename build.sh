@@ -20,8 +20,10 @@ then
     echo
 
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
-    docker-compose -f docker-compose.prod.yml exec -v /midata:/home/app/web/midata:ro web python manage.py collectstatic --no-input --clear
+    docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --no-input --clear
     echo
+
+    # docker run -v /midata:/home/app/web/midata:ro web # command_to_run
 else
     echo "Building development docker image ..."
     docker volume rm -f midata
