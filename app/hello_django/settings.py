@@ -166,3 +166,6 @@ logging.config.dictConfig({
         },
     },
 })
+
+log = logging.getLogger(__name__)
+log.warn(f'ALLOWED_HOSTS = {ALLOWED_HOSTS}')
