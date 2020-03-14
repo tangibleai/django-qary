@@ -1,4 +1,6 @@
-# pull official base image
+###########################################################################################
+# Development server container Dockerfile
+#
 FROM python:3.7.0-alpine
 
 # create directory for the app user
