@@ -1,6 +1,22 @@
 version: '3.7'
 
 services:
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+    command: gunicorn hello_django.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - "static_volume:/home/app/web/staticfiles"
+      - "media_volume:/home/app/web/mediafiles"
+    expose:
+      - 8000
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+      - nginx
+
   nginx:
     build: ./nginx
     volumes:
@@ -23,21 +39,8 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 23h & wait $${!}; done;'"
-
-  web:
-    build:
-      context: ./app
-      dockerfile: Dockerfile.prod
-    command: gunicorn hello_django.wsgi:application --bind 0.0.0.0:8000
-    volumes:
-      - "static_volume:/home/app/web/staticfiles"
-      - "media_volume:/home/app/web/mediafiles"
-    expose:
-      - 8000
-    env_file:
-      - ./.env.prod
     depends_on:
-      - db
+      - nginx
 
   db:
     image: postgres:12.0-alpine
