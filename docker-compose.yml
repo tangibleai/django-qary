@@ -8,7 +8,7 @@ services:
       - ./app/:/usr/src/app/
       - /tmp/log:/home/app/web/midata:ro
     ports:
-      - 8000:8000
+      - 80:8000
     env_file:
       - ./.env.dev
   db:
