@@ -1,7 +1,6 @@
-###########
-# BUILDER #
-###########
-
+########################################################################################
+# Production BUILDER container (see below for actual final container Dockerfile)
+#
 FROM python:3.7.0-alpine as builder
 
 WORKDIR /usr/src/app
@@ -26,12 +25,9 @@ RUN flake8 --exclude=env/ --ignore=E501,F401 .
 # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
-
-#########
-# FINAL #
-#########
-
-# pull official base image
+###########################################################################################
+# Production container config
+#
 FROM python:3.7.0-alpine
 
 # create directory for the app user

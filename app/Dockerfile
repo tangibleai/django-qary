@@ -1,3 +1,6 @@
+###########################################################################################
+# Development server container Dockerfile
+#
 FROM python:3.7-buster
 
 # create directory for the app user
