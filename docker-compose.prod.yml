@@ -3,10 +3,11 @@ version: '3.7'
 services:
   nginx:
     build: ./nginx
+
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
-      - $MIDATA_HOST_PATH:/home/app/web/midata
+      - /midata/public:/home/app/web/midata
     ports:
       # external:internal (host:container)
       - 80:80
