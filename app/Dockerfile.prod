@@ -61,14 +61,15 @@ RUN pip install --upgrade pip
 
 RUN pip install --no-cache /wheels/*
 
+COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
+
 # copy project
 COPY . $APP_HOME
-COPY ./migrate_db.prod.sh $APP_HOME
 
 
 # RUN chown -R app:app $APP_HOME
-RUN chown -R app:app $HOME && chmod -R a+rwx $HOME
+RUN chown -R app:app $APP_HOME  # && chmod -R a+rwx $HOME
 
 USER app
 
-ENTRYPOINT ["/home/app/web/migrate_db.prod.sh"]
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
