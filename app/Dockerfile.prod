@@ -61,10 +61,10 @@ RUN pip install --upgrade pip
 
 RUN pip install --no-cache /wheels/*
 
-COPY ./migrate_db.prod.sh $APP_HOME
-
 # copy project
 COPY . $APP_HOME
+COPY ./migrate_db.prod.sh $APP_HOME
+
 
 # RUN chown -R app:app $APP_HOME
 RUN chown -R app:app $HOME && chmod -R a+rwx $HOME
