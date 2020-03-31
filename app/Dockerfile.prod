@@ -38,12 +38,15 @@ RUN addgroup --system app && adduser --system --group app
 
 # create the appropriate directories
 ENV HOME=/home/app
-RUN chown -R app:app /home/app && chmod -R g+rwx $HOME && chmod -R +rwx $HOME
+# RUN chown -R app:app /home/app
+RUN chmod -R a+rwx $APP_HOME
 ENV APP_HOME=/home/app/web
-RUN mkdir -p $APP_HOME/staticfiles
+RUN mkdir -p $APP_HOME/staticfiles/admin
 RUN mkdir -p $APP_HOME/mediafiles
 RUN mkdir -p $APP_HOME/midata
-RUN chown -R app:app $APP_HOME && chmod -R g+rwx $HOME && chmod -R +rwx $APP_HOME
+# RUN chown -R app:app $APP_HOME
+RUN chmod -R a+rwx $APP_HOME
+RUN chmod -R a+rwx $APP_HOME/staticfiles/admin
 WORKDIR $APP_HOME
 
 # install dependencies
@@ -58,13 +61,12 @@ RUN pip install --upgrade pip
 
 RUN pip install --no-cache /wheels/*
 
-COPY ./migrate_db.prod.sh $APP_HOME
+# COPY ./migrate_db.prod.sh $APP_HOME
 
 # copy project
 COPY . $APP_HOME
 
 # RUN chown -R app:app $APP_HOME
-# RUN chown -R app:root $HOME && chmod -R g+rwx $HOME && chmod -R +rwx $HOME
 RUN chown -R app:app $HOME && chmod -R a+rwx $HOME
 
 USER app

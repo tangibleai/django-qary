@@ -1,24 +1,45 @@
 version: '3.7'
 
 services:
-  web:
-    build: ./app
-    command: python manage.py runserver 0.0.0.0:8000
+  nginx:
+    build: ./nginx
     volumes:
-      - ./app/:/usr/src/app/
-      - /tmp/log:/home/app/web/midata:ro
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+      - $MIDATA_HOST_PATH:/home/app/web/midata
     ports:
-      - 8000:8000
+      # external:internal (host:container)
+      - 80:80
+    depends_on:
+      - web
+
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+    command: gunicorn hello_django.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - "static_volume:/home/app/web/staticfiles"
+      - "media_volume:/home/app/web/mediafiles"
+    expose: # only exposed to other local docker containers
+      - 8000
     env_file:
-      - ./.env.dev
+      - ./.env.prod
+    depends_on:
+      - db
+
   db:
     image: postgres:12.0-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=hello_django_dev_db_un
-      - POSTGRES_PASSWORD=hello_django_db_pw
-      - POSTGRES_DB=hello_django_dev_db
+    env_file:
+      - ./.env.db.prod
+
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
+  midata:
+
+
