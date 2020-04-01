@@ -28,6 +28,7 @@ services:
       - ./.env.prod
     depends_on:
       - db
+      - es1
 
   db:
     image: postgres:12.0-alpine
@@ -63,6 +64,6 @@ volumes:
   static_volume:
   media_volume:
   midata:
-  esdata01:
+  esdata1:
 
 
