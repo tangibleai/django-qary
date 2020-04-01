@@ -3,6 +3,7 @@ version: '3.7'
 services:
   nginx:
     build: ./nginx
+
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles

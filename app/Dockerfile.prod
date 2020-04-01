@@ -39,14 +39,14 @@ RUN addgroup --system app && adduser --system --group app
 # create the appropriate directories
 ENV HOME=/home/app
 # RUN chown -R app:app /home/app
-RUN chmod -R a+rwx $HOME
+# RUN chmod -R +rwx $HOME
 ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles/admin
 RUN mkdir -p $APP_HOME/mediafiles
 RUN mkdir -p $APP_HOME/midata
 # RUN chown -R app:app $APP_HOME
-RUN chmod -R a+rwx $APP_HOME
-RUN chmod -R a+rwx $APP_HOME/staticfiles/admin
+# RUN chmod -R ug+rwx $APP_HOME
+# RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 WORKDIR $APP_HOME
 
 # install dependencies
