@@ -8,7 +8,7 @@ then
     mkdir -p $MIDATA_HOST_PATH
 
     echo "STOPPING ALL CONTAINERS!!!"
-    docker-compose down -v --remove-orphans
+    docker-compose down -f docker-compose.prod.yml -v --remove-orphans
 
     echo ''
     echo "Building !PROD! docker image ..."
@@ -24,7 +24,7 @@ then
     mkdir -p $MIDATA_HOST_PATH
 
     echo "STOPPING ALL CONTAINERS!!!"
-    docker-compose down -v --remove-orphans
+    docker-compose down -f docker-compose.dev.yml -v --remove-orphans
 
     echo ''
     echo "Building development docker image with nginx path=$MIDATA_HOST_PATH ..."
