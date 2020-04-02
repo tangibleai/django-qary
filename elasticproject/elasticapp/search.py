@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 
 def search(index = '', text="Barack Obama"):  
 
-    client = Elasticsearch()
+    client = Elasticsearch('127.0.0.1:9200')
 
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     return client.search(index=index,

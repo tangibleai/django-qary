@@ -1,34 +1,29 @@
 #!/usr/bin/env bash
 set -e
 
-echo "STOPPING ALL CONTAINERS!!!"
-docker-compose down -v --remove-orphans
-echo
-
+echo ''
 if [ "$1" == 'prod' ]
 then
-    echo "removing 'midata' docker volume"
-    docker volume rm -f midata
-    echo
-
-    echo "Building PROD docker image ..."
-    docker-compose -f docker-compose.prod.yml up -d --build
-    echo
-
-    echo "Migrating PROD db ..."
+    echo ''
+    echo "Running !PROD! docker image ..."
+    docker-compose -f docker-compose.prod.yml up -d
     docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --no-input
-    echo
 
+    echo ''
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
     docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --no-input --clear
-    echo
-
-    # docker run -v /midata:/home/app/web/midata:ro web # command_to_run
-else
-    echo "Building development docker image ..."
-    docker volume rm -f midata
-    docker-compose -f docker-compose.yml up -d --build
+elif [ "$1" == 'dev' ]
+then
+    echo ''
+    echo "Running development docker image ..."
+    docker-compose -f docker-compose.yml up -d
     docker-compose -f docker-compose.yml exec web python manage.py migrate --no-input
+
+    echo ''
     echo "Starting development containers for the webapp at http://localhost:8000/ ..."
     docker-compose -f docker-compose.yml exec web python manage.py collectstatic --no-input --clear
+elif [ "$1" == 'stop' ]
+then
+    echo "STOPPING ALL CONTAINERS!!!"
+    docker-compose down -v --remove-orphans
 fi

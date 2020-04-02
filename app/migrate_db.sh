@@ -11,6 +11,9 @@ then
     echo "PostgreSQL started"
 fi
 
+echo "Running migrate_db.sh ..."
+ls -hal /home/app/web/staticfiles/admin/js
+
 python manage.py flush --no-input
 python manage.py migrate
 python manage.py collectstatic --no-input --clear

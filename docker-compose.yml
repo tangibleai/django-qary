@@ -1,39 +1,52 @@
 version: '3.7'
 
 services:
+  # nginx:
+  #   build: ./nginx
+  #   volumes:
+  #     - static_volume:/home/app/web/staticfiles
+  #     - media_volume:/home/app/web/mediafiles
+  #     - $HOME/midata/public:/home/app/web/midata
+  #   ports:
+  #     # external:internal (host:container)
+  #     - 80:80
+  #   depends_on:
+  #     - web
+
   web:
-    build: ./app
+    restart: always
+    build:
+      context: ./elasticproject
+      dockerfile: Dockerfile
+    container_name: django-qary
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./app/:/usr/src/app/
-      - /tmp/log:/home/app/web/midata:ro
-    ports:
+      - ./elasticproject/:/usr/src/elasticproject/
+    ports: # only exposed to other local docker containers
       - 8000:8000
-    env_file:
-      - ./.env.dev
-    depens_on:
-      - postgress-primary
-      - elasticsearch-secondary
-  postgres-primary:
-    image: postgres:12.0-alpine
-    container_name: postgres-qary
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=hello_django_dev_db_un
-      - POSTGRES_PASSWORD=hello_django_db_pw
-      - POSTGRES_DB=hello_django_dev_db
-  elastcsearch-secondary:
-    image: elasticsearc:7.6.1
-    container_name: elasticsearch-qary
-    ports:
-      - 9200:9200
-      - 9300:9300
-    volumes:
-      - elastic_data:/var/lib/elasticsearch/data/
     depends_on:
-      - postgres-primary
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:7.6.1
+    container_name: elasticsearch-qary
+    volumes:
+      - ./elasticsearch-docker/esdata:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9300:9300"
+      - "9200:9200"
+
 
 volumes:
-  postgres_data:
-  elastic_data:
+  
+  # static_volume:
+  # media_volume:
+  elasticproject:
+  # midata:
+  esdata:
+
+

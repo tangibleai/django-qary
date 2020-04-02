@@ -1,7 +1,5 @@
 Django==2.2.11
 gunicorn==20.0.4
 psycopg2-binary==2.8.3
-
-elasticsearch>=7.0.0,<8.0.0
-wikipediaapi
-slugify
+transformers>=2.4.1,<2.5.0
+qary>=0.3.5

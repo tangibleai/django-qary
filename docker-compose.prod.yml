@@ -3,10 +3,11 @@ version: '3.7'
 services:
   nginx:
     build: ./nginx
+
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
-      - /tmp/midata:/home/app/web/midata
+      - /midata/public:/home/app/web/midata
     ports:
       # external:internal (host:container)
       - 80:80
@@ -21,7 +22,7 @@ services:
     volumes:
       - "static_volume:/home/app/web/staticfiles"
       - "media_volume:/home/app/web/mediafiles"
-    expose: # internal to container? cluster?
+    expose: # only exposed to other local docker containers
       - 8000
     env_file:
       - ./.env.prod
