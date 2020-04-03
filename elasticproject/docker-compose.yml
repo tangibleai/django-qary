@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  web:
+    restart: always
+    build:
+        context: .
+        dockerfile: Dockerfile
+    container_name: django_qary
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:7.6.1
+    container_name: elasticsearch-qary
+    volumes:
+      - ../elasticsearch-docker/esdata:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9300:9300"
+      - "9200:9200"
+
+volumes:
+  esdata:
+  elasticproject:
