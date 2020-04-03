@@ -21,7 +21,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     container_name: es
     volumes:
-      - //c/dev/tools/elasticsearch-7.6.1/data:/code/esdata
+      - esdata:/code/esdata
     environment:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"

@@ -14,6 +14,8 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ELASTIC_TEMPLATE_DIR = os.path.join(BASE_DIR, "elastic/templates")
+UPLOAD_TEMPLATE_DIR = os.path.join(BASE_DIR, "upload/templates")
 
 
 # Quick-start development settings - unsuitable for production
@@ -42,6 +44,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'upload',
+    'elastic',
+
+    'django_elasticsearch_dsl',
+    'rest_framework',
+    'django_elasticsearch_dsl_drf'
 ]
 
 MIDDLEWARE = [
@@ -59,7 +66,8 @@ ROOT_URLCONF = 'hello_django.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ELASTIC_TEMPLATE_DIR,
+                UPLOAD_TEMPLATE_DIR,],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -134,3 +142,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 MEDIA_URL = "/mediafiles/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+
+# Elasticsearch
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}

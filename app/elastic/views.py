@@ -11,7 +11,7 @@ def index(request):
 
 def test_connection(request):
     context = requests.get('http://elasticsearch:9200')
-    return HttpResponse(f"Connection status to elasticsearch container: {context.status_code}")
+    return HttpResponse(f"Check connection to the elasticsearch container: {context.status_code}")
 
 def search_index(request):
     results = []

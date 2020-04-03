@@ -1,6 +1,6 @@
 from rest_framework.routers import SimpleRouter
 
-from app import views
+from elastic import views
 from django.urls import path
 
 urlpatterns = [
