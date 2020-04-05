@@ -57,7 +57,13 @@ Or:
 $ ./scripts/build.sh prod
 ```
 
-### Scalable Production Environment
+### SSL Certificates
+
+The certbot container uses letsencrypt.org to generate and maintain SSL certificates (for https://totalgood.org).
+
+You can find instructions [here](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71).
+
+## Scalable Production Environment
 
 For an actual production deployment with improved security, you'll probably want to use:
 
