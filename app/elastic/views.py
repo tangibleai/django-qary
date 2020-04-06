@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .search import get_results
 from elasticsearch import Elasticsearch
 import requests
@@ -10,10 +10,12 @@ def index(request):
     return HttpResponse("<em>Elasticsearch project improved!</em>")
 
 def test_connection(request):
-    context = requests.get('http://elasticsearch:9200')
-    return HttpResponse(f"Check connection to the elasticsearch container: {context.status_code}")
+    results = get_results("When was stan Lee born?")
+    ser_res = JsonResponse(results, safe = False)
+    return HttpResponse(ser_res, content_type = 'application/json')
 
 def search_index(request):
+
     results = []
     question =""
 
@@ -21,7 +23,6 @@ def search_index(request):
         question = request.GET['query']
     
     results = get_results(question)
-    context = {'results': results,
-                'count': len(results),
-                'search_term': question}
+    context = {'results': results}
+
     return render(request, 'elastic.html', context)
