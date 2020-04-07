@@ -9,8 +9,9 @@ services:
       - $HOME/midata/public:/home/app/web/midata
       # certbot for letsencrypt.org
       - ./data/nginx:/etc/nginx/conf.d
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
+      - ./dh-param/dhparam-2048.pem:/etc/ssl/certs/dhparam-2048.pem
+      - /docker-volumes/etc/letsencrypt/live/ohhaithere.com/fullchain.pem:/etc/letsencrypt/live/ohhaithere.com/fullchain.pem
+      - /docker-volumes/etc/letsencrypt/live/ohhaithere.com/privkey.pem:/etc/letsencrypt/live/ohhaithere.com/privkey.pem
     ports:
       # external:internal (host:container)
       - 80:80
