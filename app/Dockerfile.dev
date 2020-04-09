@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED 1
 # EXPOSE 8000
 
 RUN apt-get update && \
-    apt-get upgrade  # && \
+    apt-get -y upgrade  # && \
 #    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /code/
