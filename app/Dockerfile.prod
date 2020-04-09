@@ -21,7 +21,7 @@ RUN pip install flake8
 # F401=unused import ; E501=line too long
 # SEE: flake8.pycqa.org/en/2.6.0/warnings.html#error-codes
 # COPY . /usr/src/app/
-RUN flake8 --exclude=env/ --ignore=E501,F401 .
+# RUN flake8 --exclude=env/ --ignore=E501,F401 .
 # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
