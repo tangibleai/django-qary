@@ -171,7 +171,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
 # Elasticsearch
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'elasticsearch:9200'
+        'hosts': 'es:9200'
     },
 }
 # Django REST Framework

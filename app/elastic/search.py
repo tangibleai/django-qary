@@ -3,7 +3,7 @@ from elasticsearch import Elasticsearch
 
 def search(index='', text="coronavirus"):
 
-    client = Elasticsearch("elasticsearch:9200")
+    client = Elasticsearch("es:9200")
     # client = Elasticsearch("localhost:9200")
 
     body = {
