@@ -15,8 +15,8 @@ ENV PYTHONUNBUFFERED 1
 # EXPOSE 8000
 
 RUN apt-get update && \
-    apt-get upgrade && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get upgrade  # && \
+#    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /code/
 RUN pip install --upgrade pip && \
