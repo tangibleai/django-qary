@@ -2,25 +2,22 @@ FROM python:3.7-buster
 
 # create directory for the app user
 # RUN mkdir -p /home/app/midata
-RUN mkdir /code
-
-# set work directory
-WORKDIR /code
+WORKDIR /usr/src/app
 
 # prevent python interpreter from writing of .pyc files and buffering of stdout/err
 # equivalent to: `python -B -u`
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+RUN apt-get update && apt-get install -y netcat apt-utils postgresql-client gcc python3-dev musl-dev libpq-dev
+
+# copy django project from host (including requirements.txt) into container
+COPY . /usr/src/app/
+
+RUN pip install --upgrade pip
+
 # EXPOSE 8000
 
-RUN apt-get update && \
-    apt-get upgrade && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y upgrade
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-COPY requirements.txt /code/
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt \
-    && pip3 install djangorestframework
-
-COPY . /code/

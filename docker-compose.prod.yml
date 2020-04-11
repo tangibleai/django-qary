@@ -28,7 +28,7 @@ services:
       - ./.env.prod
     depends_on:
       - db
-      - es1
+      - es
 
   db:
     image: postgres:12.0-alpine
@@ -37,26 +37,23 @@ services:
     env_file:
       - ./.env.db.prod
 
-  es1:
+  es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
-    container_name: es1
+    container_name: es
     environment:
-      - node.name=es1
-      - cluster.name=es-docker-cluster
-      # - discovery.seed_hosts=es2,es3
-      # - cluster.initial_master_nodes=es1,es2,es3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
-      - esdata1:/usr/share/elasticsearch/data
+      - esdata:/usr/share/elasticsearch/data
+    expose:
+      - 9200
     ports:
       - 9200:9200
-    # networks:
-    #   - elastic
 
 
 volumes:
@@ -64,6 +61,6 @@ volumes:
   static_volume:
   media_volume:
   midata:
-  esdata1:
+  esdata:
 
 
