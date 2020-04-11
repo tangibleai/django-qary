@@ -37,5 +37,6 @@ then
 elif [ "$1" == 'stop' ]
 then
     echo "STOPPING ALL CONTAINERS!!!"
-    docker-compose down -v --remove-orphans
+    docker-compose -f docker-compose.prod.yml down -v --remove-orphans
+    docker-compose -f docker-compose.dev.yml down -v --remove-orphans
 fi
