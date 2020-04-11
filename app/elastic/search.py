@@ -2,8 +2,10 @@ from elasticsearch import Elasticsearch
 
 def search(index = '', text="coronavirus"):  
 
-    client = Elasticsearch("elasticsearch:9200")
-    # client = Elasticsearch("localhost:9200")
+    # to connect from within the shared docker network:
+    # client = Elasticsearch("elasticsearch:9200")
+    # to connect directly from localhost:
+    client = Elasticsearch("localhost:9200")
 
     body = {
         "query": {
@@ -56,7 +58,7 @@ def get_results(statement):
                 mytuple = (doc['_source']['title'],
                             doc['_score'],
                             doc['_source']['source'],
-                            snippet,
+                            snippet[0],
                             highlight['_source']['section_num'],
                             highlight['_source']['section_title'],
                             highlight['_score'])
