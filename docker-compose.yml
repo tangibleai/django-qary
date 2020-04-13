@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.6'
 
 services:
   nginx:
@@ -39,7 +39,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.db.prod
-      
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     container_name: es
