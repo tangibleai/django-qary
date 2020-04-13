@@ -28,6 +28,18 @@
 
     <div class="container">
 
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title"> Chatbot test  </h6>
+          <p class="card-text">
+
+            {{ reply }}
+
+            </p>
+          <a href="www.google.com">Go to Wikipedia</a>
+        </div>
+      </div> 
+
         {% if results %}
         <!-- <div class="search results"> -->
             {% for r in results %}
@@ -37,7 +49,8 @@
                   <h6 class="card-title"> {{ r.0 }} | {{ r.5 }}  </h6>
                   <p class="card-text">
 
-                    {{ r.3 }}
+                    {{ r.3 | safe }}
+
                     <br>
                     Article score: {{ r.1 }} | Section score: {{ r.6 }}
 
