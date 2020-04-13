@@ -1,3 +1,8 @@
+""" GMail SMTP client
+
+- send alerts when a server is down
+- passwword confirmation/reset?
+"""
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase

@@ -23,9 +23,9 @@ from elastic_app import views  # noqa
 
 
 urlpatterns = [
-    path("", image_upload, name="upload"),
+    path("upload/", image_upload, name="upload"),
     path('admin/', admin.site.urls),
-    path('elastic_app/', include('elastic_app.urls'))
+    path('', include('elastic_app.urls'))
 ]
 
 if bool(settings.DEBUG):
