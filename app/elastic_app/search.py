@@ -1,9 +1,16 @@
+import os
+
 from elasticsearch import Elasticsearch
 
 
+ES_HOST = os.environ.get("ES_HOST", "es")  # or localhost:9200
+CLIENT = Elasticsearch(host=ES_HOST, port='9200')
+if not CLIENT.ping():
+    raise RuntimeError("Unable to find ElasticSearch server at {}:9200".format(ES_HOST))
+
+
 def search(index='', text="coronavirus"):
-    # client = Elasticsearch("localhost:9200")
-    client = Elasticsearch("es:9200")
+    # client = Elasticsearch(ES_HOST)
 
     body = {
         "query": {
@@ -38,8 +45,7 @@ def search(index='', text="coronavirus"):
     }
 
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
-    return client.search(index=index,
-                         body=body)
+    return CLIENT.search(index=index, body=body)
 
 
 def get_results(statement):
@@ -56,7 +62,7 @@ def get_results(statement):
                 mytuple = (doc['_source']['title'],
                            doc['_score'],
                            doc['_source']['source'],
-                           snippet,  # snippet[0]
+                           snippet[0],
                            highlight['_source']['section_num'],
                            highlight['_source']['section_title'],
                            highlight['_score'])
