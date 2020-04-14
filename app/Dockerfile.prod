@@ -10,7 +10,8 @@
 # ENV PYTHONDONTWRITEBYTECODE 1
 # ENV PYTHONUNBUFFERED 1
 
-# RUN apt-get update && apt-get install -y netcat apt-utils postgresql-client gcc python3-dev musl-dev libpq-dev
+# will complain about apt-utils so netcat won't be configured based on the terminal settings
+# RUN apt-get update && apt-get install -y netcat postgresql-client gcc python3-dev musl-dev libpq-dev
 
 # # copy django project from host (including requirements.txt) into container
 # COPY . /usr/src/app/
@@ -49,13 +50,15 @@ RUN mkdir -p $APP_HOME/staticfiles/admin && \
     mkdir -p $APP_HOME/mediafiles && \
     mkdir -p $APP_HOME/midata
 WORKDIR $APP_HOME
+COPY . $APP_HOME
+# COPY . .
 # RUN chown -R app:app $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 
 
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
+# COPY --from=builder /usr/src/app/wheels /wheels
+# COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --user -r requirements.txt
 RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
@@ -63,7 +66,7 @@ RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
 # copy project
-COPY . $APP_HOME
+
 
 
 
