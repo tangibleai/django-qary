@@ -1,16 +1,30 @@
 import os
+import logging
 
 from elasticsearch import Elasticsearch
 
+log = logging.getLogger(__name__)
 
-ES_HOST = os.environ.get("ES_HOST", "es")  # or localhost:9200
-CLIENT = Elasticsearch(host=ES_HOST, port='9200')
-if not CLIENT.ping():
-    raise RuntimeError("Unable to find ElasticSearch server at {}:9200".format(ES_HOST))
+
+ES_HOST = os.environ.get('ES_HOST', 'es')  # or localhost
+ES_PORT = os.environ.get('ES_PORT', '9200')  # or 9200
+
+
+def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
+    global CLIENT
+    if CLIENT is not None:  # and CLIENT.ping():
+        client = CLIENT
+    else:
+        log.info(f"Connecting to ElasticSearch server at {host}:{port}")
+        client = Elasticsearch(host=ES_HOST, port='9200')
+    if not client.ping():
+        log.error(f"Unable to find ElasticSearch server at {host}:{port}")
+    CLIENT = client
+    return CLIENT
 
 
 def search(index='', text="coronavirus"):
-    # client = Elasticsearch(ES_HOST)
+    client = connect_and_ping()  # Elasticsearch(f'{ES_HOST}:{ES_PORT}')
 
     body = {
         "query": {
@@ -45,7 +59,7 @@ def search(index='', text="coronavirus"):
     }
 
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
-    return CLIENT.search(index=index, body=body)
+    return client.search(index=index, body=body)
 
 
 def get_results(statement):
