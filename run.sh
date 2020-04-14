@@ -7,7 +7,7 @@ then
     echo ''
     echo "Running !PROD! docker image ..."
     docker-compose -f docker-compose.prod.yml up -d
-    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --no-input
+    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate upload --no-input
 
     echo ''
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
@@ -17,7 +17,7 @@ then
     echo ''
     echo "Running development docker image ..."
     docker-compose -f docker-compose.dev.yml up -d
-    docker-compose -f docker-compose.dev.yml exec web python manage.py migrate --no-input
+    docker-compose -f docker-compose.dev.yml exec web python manage.py migrate upload --no-input
 
     echo ''
     echo "Starting development containers for the webapp at http://localhost:8000/ ..."
