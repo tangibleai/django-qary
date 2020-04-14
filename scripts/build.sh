@@ -11,8 +11,10 @@ then
     docker-compose -f docker-compose.prod.yml down -v --remove-orphans
 
     echo ''
-    echo "Building !PROD! docker image ..."
+    echo "Bringing up docker-compose.prod.yml docker images ..."
     docker-compose -f docker-compose.prod.yml up -d --build
+
+    echo "Running exec web python manage.py migrate --no-input"
     docker-compose -f docker-compose.prod.yml exec web python manage.py migrate upload --no-input
 
     echo ''
