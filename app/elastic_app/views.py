@@ -1,10 +1,15 @@
+import logging
+
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .search import get_results
 # from elasticsearch import Elasticsearch
 # import requests
-# from qary import clibot
+import qary
 
+from qary import clibot  # noqa
+
+log = logging.warn(f"qary.__file__: {qary.__file__}")
 # Create your views here.
 
 # BOT = clibot.CLIBot(bots=['glossary'])
