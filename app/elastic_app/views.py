@@ -3,11 +3,11 @@ from django.http import HttpResponse, JsonResponse
 from .search import get_results
 # from elasticsearch import Elasticsearch
 # import requests
-from qary import clibot
+# from qary import clibot
 
 # Create your views here.
 
-BOT = clibot.CLIBot(bots=['glossary'])
+# BOT = clibot.CLIBot(bots=['glossary'])
 
 
 def index(request):
@@ -29,7 +29,6 @@ def search_index(request):
         question = request.GET['query']
 
     results = get_results(question)
-    context = {'results': results,
-               'reply': BOT.reply('what is an allele?')}
+    context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
 
     return render(request, 'elastic_app.html', context)
