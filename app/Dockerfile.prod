@@ -49,19 +49,11 @@ RUN mkdir -p $APP_HOME/midata
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 WORKDIR $APP_HOME
 
-# install python dependencies in a venv dir
-RUN pip install virtualenv && virtualenv -p python venv
-RUN source venv/bin/activate
-
+# install dependencies
+RUN apt-get update && apt-get install -y libpq-dev netcat
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-# RUN $APP_HOME/venv/bin/python /app/code/manage.py makemigrations
-
-# install netcat (nc) before using it to check postgres port to wait till it is up
-RUN apt-get update && apt-get install -y libpq-dev netcat
-
 # Step 21/27 : RUN pip install --upgrade pip
 #  ---> Running in 29dfb74c1632
 # The directory '/home/app/.cache/pip/http' or its parent directory is not owned by the current user and the cache has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
