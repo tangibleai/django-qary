@@ -30,6 +30,10 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 #
 FROM python:3.7-buster
 
+# netcat for checking when services are up
+# libpq-dev for postgres header files (python psycopg package)
+RUN apt-get update && apt-get install -y libpq-dev netcat
+
 
 # create the app user and its /home/app/
 RUN addgroup --system app && adduser --system --group app
@@ -45,8 +49,6 @@ WORKDIR $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 
 
-# install dependencies
-RUN apt-get update && apt-get install -y libpq-dev netcat
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
