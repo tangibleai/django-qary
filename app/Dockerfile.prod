@@ -30,24 +30,20 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 #
 FROM python:3.7-buster
 
-# create directory for the app user
-RUN mkdir -p /home/app
 
-# create the app user
+# create the app user and its /home/app/
 RUN addgroup --system app && adduser --system --group app
-
-# create the appropriate directories
+USER app
 ENV HOME=/home/app
-# RUN chown -R app:app /home/app
-# RUN chmod -R +rwx $HOME
 ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles/admin
 RUN mkdir -p $APP_HOME/mediafiles
 RUN mkdir -p $APP_HOME/midata
+WORKDIR $APP_HOME
 # RUN chown -R app:app $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
-WORKDIR $APP_HOME
+
 
 # install dependencies
 RUN apt-get update && apt-get install -y libpq-dev netcat
@@ -60,6 +56,7 @@ RUN pip install --upgrade pip
 # The directory '/home/app/.cache/pip' or its parent directory is not owned by the current user and caching wheels has been disabled. check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
 
 RUN pip install --no-cache /wheels/*
+RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
@@ -67,9 +64,6 @@ COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 COPY . $APP_HOME
 
 
-# RUN chown -R app:app $APP_HOME
-RUN chown -R app:app $APP_HOME  # && chmod -R a+rwx $HOME
 
-USER app
 
 ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
