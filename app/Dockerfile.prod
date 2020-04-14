@@ -62,7 +62,7 @@ RUN pip install --upgrade pip
 # The directory '/home/app/.cache/pip/http' or its parent directory is not owned by the current user and the cache has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
 # The directory '/home/app/.cache/pip' or its parent directory is not owned by the current user and caching wheels has been disabled. check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
 
-RUN pip install --no-cache --target=$PYTHON_ENV /wheels/*
+RUN pip install --no-cache --target="$PYTHON_ENV" --upgrade /wheels/*
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
