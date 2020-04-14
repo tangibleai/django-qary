@@ -40,6 +40,7 @@ RUN addgroup --system app && adduser --system --group app
 ENV HOME=/home/app
 ENV PYTHON_ENV=$HOME/env
 RUN mkdir -p $PYTHON_ENV
+ENV PYTHONPATH="${PYTHONPATH}:$PYTHON_ENV"
 
 # RUN chown -R app:app /home/app
 # RUN chmod -R +rwx $HOME
