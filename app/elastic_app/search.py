@@ -5,12 +5,12 @@ from elasticsearch import Elasticsearch
 
 ES_HOST = os.environ.get("ES_HOST", "es")  # or localhost:9200
 CLIENT = Elasticsearch(host=ES_HOST, port='9200')
-if not CLIENT.ping():
-    raise RuntimeError("Unable to find ElasticSearch server at {}:9200".format(ES_HOST))
+#if not CLIENT.ping():
+#    raise RuntimeError("Unable to find ElasticSearch server at {}:9200".format(ES_HOST))
 
 
 def search(index='', text="coronavirus"):
-    # client = Elasticsearch(ES_HOST)
+    client = Elasticsearch(ES_HOST + ':9200')
 
     body = {
         "query": {
