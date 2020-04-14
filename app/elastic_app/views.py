@@ -7,9 +7,15 @@ from .search import get_results
 # import requests
 import qary
 
-# from qary import clibot  # noqa
-
 log = logging.warn(f"qary.__file__: {qary.__file__}")
+
+from qary.constants import DATA_DIR  # noqa
+log = logging.warn(f"qary.constants.DATA_DIR: {DATA_DIR}")
+
+from qary import clibot  # noqa
+
+log = logging.warn(f"qary.clibot.__file__: {clibot.__file__}")
+
 # Create your views here.
 
 # BOT = clibot.CLIBot(bots=['glossary'])
