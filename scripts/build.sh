@@ -13,7 +13,7 @@ then
     echo ''
     echo "Building !PROD! docker image ..."
     docker-compose -f docker-compose.prod.yml up -d --build
-    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --no-input
+    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate upload --no-input
 
     echo ''
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
@@ -29,7 +29,7 @@ then
     echo ''
     echo "Building development docker image with nginx path=$MIDATA_HOST_PATH ..."
     docker-compose -f docker-compose.dev.yml up -d --build
-    docker-compose -f docker-compose.dev.yml exec web python manage.py migrate --no-input
+    docker-compose -f docker-compose.dev.yml exec web python manage.py migrate upload --no-input
 
     echo ''
     echo "Starting development containers for the webapp at http://localhost:8000/ ..."

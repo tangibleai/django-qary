@@ -13,11 +13,11 @@ then
     echo ''
     echo "Building !PROD! docker image ..."
     docker-compose -f docker-compose.prod.yml up -d
-    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --no-input
+    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate upload --no-input
 
     echo ''
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
-    docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --no-input --clear
+    docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic upload --no-input --clear
 elif [ "$1" == 'dev' ]
 then
     MIDATA_HOST_PATH="$HOME/midata/public"
@@ -29,7 +29,7 @@ then
     echo ''
     echo "Building development docker image with nginx path=$MIDATA_HOST_PATH ..."
     docker-compose -f docker-compose.dev.yml up -d
-    docker-compose -f docker-compose.def.yml exec web python manage.py migrate --no-input
+    docker-compose -f docker-compose.def.yml exec web python manage.py migrate upload --no-input
 
     echo ''
     echo "Starting development containers for the webapp at http://localhost:8000/ ..."
