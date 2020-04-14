@@ -7,7 +7,7 @@ from .search import get_results
 # import requests
 import qary
 
-from qary import clibot  # noqa
+# from qary import clibot  # noqa
 
 log = logging.warn(f"qary.__file__: {qary.__file__}")
 # Create your views here.
