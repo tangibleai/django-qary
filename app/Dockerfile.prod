@@ -33,6 +33,7 @@ FROM python:3.7-buster
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+
 # netcat for checking when services are up
 # libpq-dev for postgres header files (python psycopg package)
 RUN apt-get update && \
@@ -45,6 +46,7 @@ RUN addgroup --system app && \
     adduser --system --group app
 USER app
 ENV HOME=/home/app
+ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles/admin && \
     mkdir -p $APP_HOME/mediafiles && \
