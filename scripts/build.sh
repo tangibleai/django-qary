@@ -15,7 +15,7 @@ then
     docker-compose -f docker-compose.prod.yml up -d --build
 
     echo "Running exec web python manage.py migrate --no-input"
-    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate upload --no-input
+    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --no-input
 
     echo ''
     echo "Starting PROD containers for the webapp at http://localhost/ ..."
