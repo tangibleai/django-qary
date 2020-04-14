@@ -1,30 +1,30 @@
 ########################################################################################
 # Production BUILDER container (see below for actual final container Dockerfile)
 #
-# FROM python:3.7-buster as builder
+FROM python:3.7-buster as builder
 
-# WORKDIR /usr/src/app
+WORKDIR /usr/src/app
 
-# # prevent python interpreter from writing of .pyc files and buffering of stdout/err
-# # equivalent to: `python -B -u`
-# ENV PYTHONDONTWRITEBYTECODE 1
-# ENV PYTHONUNBUFFERED 1
+# prevent python interpreter from writing of .pyc files and buffering of stdout/err
+# equivalent to: `python -B -u`
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 # will complain about apt-utils so netcat won't be configured based on the terminal settings
-# RUN apt-get update && apt-get install -y netcat postgresql-client gcc python3-dev musl-dev libpq-dev
+RUN apt-get update && apt-get install -y netcat postgresql-client gcc python3-dev musl-dev libpq-dev
 
-# # copy django project from host (including requirements.txt) into container
+# copy django project from host (including requirements.txt) into container
+COPY . /usr/src/app/
+
+RUN pip install --upgrade pip
+RUN pip install flake8
+# lint (PEP8 style check)
+# F401=unused import ; E501=line too long
+# SEE: flake8.pycqa.org/en/2.6.0/warnings.html#error-codes
 # COPY . /usr/src/app/
-
-# RUN pip install --upgrade pip
-# RUN pip install flake8
-# # lint (PEP8 style check)
-# # F401=unused import ; E501=line too long
-# # SEE: flake8.pycqa.org/en/2.6.0/warnings.html#error-codes
-# # COPY . /usr/src/app/
-# # RUN flake8 --exclude=env/ --ignore=E501,F401 .
-# # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
-# RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+# RUN flake8 --exclude=env/ --ignore=E501,F401 .
+# RUN flake8 --max-line-length=150 --ignore=E501,F401 .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 ###########################################################################################
 # Production container config
@@ -59,11 +59,11 @@ COPY . $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 
 
-# COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/wheels /wheels
 # COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install --user -r requirements.txt
-RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
+RUN pip install -r requirements.txt
+# RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
