@@ -3,7 +3,11 @@ import logging
 import wikipediaapi
 from slugify import slugify
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import NotFoundError
 from search import search
+
+from .constants import ES_SCHEMA, ES_INDEX, ES_CATEGORIES
+
 
 log = logging.getLogger(__name__)
 
@@ -14,56 +18,6 @@ except ConnectionRefusedError:
 
 wiki_wiki = wikipediaapi.Wikipedia('en')
 
-DEFAULT_CATEGORIES = (
-    'Marvel Comics',
-    'Machine learning',
-    'Marvel Comics editors-in-chief',
-    'American science fiction television series',
-    'Science fiction television',
-    'Natural language processing',
-    'American comics writers',
-    'Presidents of the United States',
-    'Coronaviridae',
-    'Pandemics',
-)
-
-
-DEFAULT_SCHEMA = {
-    "properties": {
-
-        "text": {
-            "type": "nested",
-            "properties": {
-                    "section_num": {"type": "integer"},
-                    "section_title": {"type": "text"},
-                    "section_content": {"type": "text"}
-            }
-        },
-
-        "references": {
-            "type": "nested",
-            "properties": {
-                    "section_num": {"type": "integer"},
-                    "section_title": {"type": "text"},
-                    "section_content": {"type": "text"}
-            }
-        },
-
-        "title": {
-            "type": "text"
-        },
-
-        "source": {
-            "type": "text"
-        },
-
-        "page_id": {
-            "type": "long"
-        },
-
-    }
-}
-
 
 class Document:
 
@@ -73,17 +27,16 @@ class Document:
         self.source = ''
         self.text = ''
 
-    def __if_exists(self, page_id, index=""):
-        '''
-        Check if the article already exists in the database
-        with a goal to avoid duplication
-        '''
-
-        return client.search(index=index,
-                             body={"query":
-                                   {"match":
-                                    {"page_id": page_id}
-                                    }})['hits']['total']['value']
+    def __if_exists(self, page_id, index=ES_INDEX):
+        """ Check if the article already exists in the database returning a total count """
+        try:
+            return client.search(index=index,
+                                 body={"query":
+                                       {"match":
+                                        {"page_id": page_id}
+                                        }})['hits']['total']['value']
+        except NotFoundError:
+            return None
 
     def insert(self, title, page_id, url, text, references, index):
         ''' Add a new document to the index'''
@@ -99,13 +52,13 @@ class Document:
                      'text': self.text,
                      'references': self.references}
 
-        if self.__if_exists(page_id) == 0:
+        if not self.__if_exists(page_id):
 
             try:
                 client.index(index=index, body=self.body)
                 log.info(f'Successfully added document {self.title} to index {index}.')
             except Exception as error:
-                log.info(f"Error writing document {page_id}: {error}")
+                log.error(f"Error writing document {page_id}={self.page_id}:{self.title}:\n    {error}")
 
         else:
             log.info(f"Article {self.title} is already in the database")
@@ -159,7 +112,7 @@ def get_references(mylist):
     return (content_list, reference_list)
 
 
-def search_insert_wiki(categories=DEFAULT_CATEGORIES, mapping=DEFAULT_SCHEMA):
+def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA):
     """ Retrieve all wikipedia pages associated with the categories listed in `categories`
 
     Input:
@@ -208,7 +161,7 @@ if __name__ == "__main__":
 
     hits = search("When was Barack Obama inaugurated?").get('hits', {}).get('hits', [])
     if not len(hits):
-        search_insert_wiki(categories=DEFAULT_CATEGORIES, mapping=DEFAULT_SCHEMA)
+        search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA)
         hits = search("When was Barack Obama inaugurated?").get('hits', {}).get('hits', [])
     for doc in hits:
         for s in doc['_source'].values():
