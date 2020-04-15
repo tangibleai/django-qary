@@ -19,7 +19,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.prod
-    command: "gunicorn main_app.wsgi:application -b 0.0.0.0:8000"
+    command: "gunicorn  -b 0.0.0.0:8000 --timeout=240 main_app.wsgi:application"
     volumes:
       - "static_volume:/home/app/web/staticfiles"
       - "media_volume:/home/app/web/mediafiles"
