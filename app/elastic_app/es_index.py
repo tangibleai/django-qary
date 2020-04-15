@@ -1,16 +1,34 @@
+import logging
+
 import wikipediaapi
 from slugify import slugify
 from elasticsearch import Elasticsearch
 from search import search
 
+log = logging.getLogger(__name__)
+
 try:
     client = Elasticsearch("localhost:9200")
 except ConnectionRefusedError:
-    print("Failed to launch Elstcisearch")
+    log.info("Failed to launch Elstcisearch")
 
 wiki_wiki = wikipediaapi.Wikipedia('en')
 
-mapping = {
+DEFAULT_CATEGORIES = (
+    'Marvel Comics',
+    'Machine learning',
+    'Marvel Comics editors-in-chief',
+    'American science fiction television series',
+    'Science fiction television',
+    'Natural language processing',
+    'American comics writers',
+    'Presidents of the United States',
+    'Coronaviridae',
+    'Pandemics',
+)
+
+
+DEFAULT_SCHEMA = {
     "properties": {
 
         "text": {
@@ -85,12 +103,12 @@ class Document:
 
             try:
                 client.index(index=index, body=self.body)
-                print(f'Successfully added document {self.title} to index {index}.')
+                log.info(f'Successfully added document {self.title} to index {index}.')
             except Exception as error:
-                print(f"Error writing document {page_id}: {error}")
+                log.info(f"Error writing document {page_id}: {error}")
 
         else:
-            print(f"Article {self.title} is already in the database")
+            log.info(f"Article {self.title} is already in the database")
 
 
 def parse_article(article):
@@ -119,7 +137,7 @@ def parse_article(article):
             sections.append(section_dict)
             text = text.split(f"\n\n{title}")[0]
         else:
-            print(f"Skipping section {title} (empty)S.")
+            log.info(f"Skipping section {title} (empty)S.")
             pass
 
     return sections
@@ -141,23 +159,28 @@ def get_references(mylist):
     return (content_list, reference_list)
 
 
-def search_insert_wiki(category, mapping):
+def search_insert_wiki(categories=DEFAULT_CATEGORIES, mapping=DEFAULT_SCHEMA):
+    """ Retrieve all wikipedia pages associated with the categories listed in `categories`
 
-    if type(category) is not list:
-        category = [category]
+    Input:
+        categories (str or seq): sequence of strs or str with comma separated names of categories
+        mapping (dict): elastic search schema (called "mapping" in Elasticsearch documentation)
+    """
+    if isinstance(categories, str):
+        categories = [c.strip() for c in categories.split(',')]
 
-    wiki_wiki = wikipediaapi.Wikipedia('en')
+    wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
 
-    for c in category:
+    for c in categories:
         try:
-            '''Create and empty index with predefined data structure'''
+            # create empty index with predefined schema (data structure)
             client.indices.create(index=slugify(c), body={"mappings": mapping})
-            print(f'New index {slugify(c)} has been created')
+            log.info(f'New index {slugify(c)} has been created')
 
-            '''Access the wikipedia article that lists wikipedia articles and urls in the category `c`'''
+            # Retrieve Wikipedia article with list of article urls for the category `c`'''
             cat = wiki_wiki.page(f"Category:{c}")
 
-            ''' Parse and add articles in the category to database'''
+            # Parse and add articles in the category to database
             for key in cat.categorymembers.keys():
                 page = wiki_wiki.page(key)
                 if "Category:" not in page.title:
@@ -167,10 +190,11 @@ def search_insert_wiki(category, mapping):
                     doc.insert(page.title, page.pageid, page.fullurl, content, references, index=slugify(c))
 
         except Exception as error:
-            print(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
+            log.info(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
 
 
-def test_search(statement):
+def print_search_results(statement):
+    """ Search Elasticsearch for articles related to the provided statement and print them to the terminal """
     res = search(text=statement)
     print('Relevant articles from your ElasicSearch library:')
     print('===================')
@@ -180,26 +204,12 @@ def test_search(statement):
         print("----------------------")
 
 
-def test_index(category):
-    search_insert_wiki(category, mapping=mapping)
-
-
 if __name__ == "__main__":
 
-    # test_index('American science fiction television series')
-    test_search("when barack obama was inaugurated?")
-
-    # To add new categories to elasticsearch:
-    # categories = ['Marvel Comics',
-    #             'Machine learning',
-    #             'Marvel Comics editors-in-chief',
-    #             'American science fiction television series',
-    #             'Science fiction television',
-    #             'Natural language processing',
-    #             'American comics writers',
-    #             'Presidents of the United States',
-    #             'Coronaviridae',
-    #             'Pandemics'
-    #             ]
-
-    # search_insert_wiki(categories, mapping)
+    hits = search("When was Barack Obama inaugurated?").get('hits', {}).get('hits', [])
+    if not len(hits):
+        search_insert_wiki(categories=DEFAULT_CATEGORIES, mapping=DEFAULT_SCHEMA)
+        hits = search("When was Barack Obama inaugurated?").get('hits', {}).get('hits', [])
+    for doc in hits:
+        for s in doc['_source'].values():
+            log.info(s)

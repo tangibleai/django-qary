@@ -19,8 +19,10 @@ then
 
     echo ''
     echo "Collecting static in PROD containers for the webapp with exec web python manage.py collect static ..."
-
     docker-compose  -f docker-compose.prod.yml exec --user app web python manage.py collectstatic --no-input  # --clear
+
+    echo "Indexing wikipedia categories and testing Elasticsearch"
+    docker-compose  -f docker-compose.prod.yml exec --user app web python app/elastic_app/es_index.py
 elif [ "$1" == 'dev' ]
 then
     MIDATA_HOST_PATH="$HOME/midata/public"
