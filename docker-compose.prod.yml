@@ -11,7 +11,7 @@ services:
       - $HOME/midata/public:/home/app/web/midata
     ports:
       # external:internal (host:container)
-      - 80:80
+      - "80:80"
     depends_on:
       - web
 
@@ -30,6 +30,17 @@ services:
     depends_on:
       - db
       - es
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: rz01
+    expose:
+      - 6379
+    # ports:
+    #   - "6379:6379"
+    # networks:
+    #   - djangonetwork
 
   db:
     image: postgres:12.0-alpine
