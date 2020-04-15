@@ -4,7 +4,7 @@ set -e
 echo ''
 if [ "$1" == 'prod' ]
 then
-    MIDATA_HOST_PATH=/midata/public
+    MIDATA_HOST_PATH="$HOME/midata/public"
     mkdir -p $MIDATA_HOST_PATH
 
     echo "STOPPING ALL CONTAINERS!!!"
@@ -14,12 +14,13 @@ then
     echo "Bringing up docker-compose.prod.yml docker images ..."
     docker-compose -f docker-compose.prod.yml up -d --build
 
-    echo "Running exec web python manage.py migrate --no-input"
-    docker-compose -f docker-compose.prod.yml exec web python manage.py migrate
+    echo "Migrating DB in PROD containers with exec web python manage.py migrate (without --no-input)"
+    docker-compose -f docker-compose.prod.yml exec --user web python manage.py migrate
 
     echo ''
-    echo "Starting PROD containers for the webapp at http://localhost/ ..."
-    docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --no-input --clear
+    echo "Collecting static in PROD containers for the webapp with exec web python manage.py collect static ..."
+
+    docker-compose -f docker-compose.prod.yml exec --user app web python manage.py collectstatic --no-input  # --clear
 elif [ "$1" == 'dev' ]
 then
     MIDATA_HOST_PATH="$HOME/midata/public"
@@ -31,7 +32,8 @@ then
     echo ''
     echo "Building development docker image with nginx path=$MIDATA_HOST_PATH ..."
     docker-compose -f docker-compose.dev.yml up -d --build
-    docker-compose -f docker-compose.dev.yml exec web python manage.py migrate upload --no-input
+    echo "Running exec web python manage.py migrate (without --no-input)"
+    docker-compose -f docker-compose.dev.yml exec web python manage.py migrate
 
     echo ''
     echo "Starting development containers for the webapp at http://localhost:8000/ ..."
