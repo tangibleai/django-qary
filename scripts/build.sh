@@ -15,12 +15,12 @@ then
     docker-compose -f docker-compose.prod.yml up -d --build
 
     echo "Migrating DB in PROD containers with exec web python manage.py migrate (without --no-input)"
-    docker-compose -f docker-compose.prod.yml exec --user web python manage.py migrate
+    docker-compose  -f docker-compose.prod.yml exec --user app web python manage.py migrate
 
     echo ''
     echo "Collecting static in PROD containers for the webapp with exec web python manage.py collect static ..."
 
-    docker-compose -f docker-compose.prod.yml exec --user app web python manage.py collectstatic --no-input  # --clear
+    docker-compose  -f docker-compose.prod.yml exec --user app web python manage.py collectstatic --no-input  # --clear
 elif [ "$1" == 'dev' ]
 then
     MIDATA_HOST_PATH="$HOME/midata/public"
