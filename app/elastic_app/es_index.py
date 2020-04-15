@@ -27,7 +27,7 @@ class Document:
         self.source = ''
         self.text = ''
 
-    def __if_exists(self, page_id, index=ES_INDEX):
+    def count_duplicates(self, page_id, index=ES_INDEX):
         """ Check if the article already exists in the database returning a total count """
         try:
             return client.search(index=index,
@@ -35,11 +35,12 @@ class Document:
                                        {"match":
                                         {"page_id": page_id}
                                         }})['hits']['total']['value']
-        except NotFoundError:
-            return None
+        except NotFoundError as err:
+            log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
+        return None
 
-    def insert(self, title, page_id, url, text, references, index):
-        ''' Add a new document to the index'''
+    def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
+        """ Add a new document to the index """
 
         self.title = title
         self.page_id = page_id
@@ -52,7 +53,7 @@ class Document:
                      'text': self.text,
                      'references': self.references}
 
-        if not self.__if_exists(page_id):
+        if not self.count_duplicates(page_id):
 
             try:
                 client.index(index=index, body=self.body)
@@ -61,7 +62,7 @@ class Document:
                 log.error(f"Error writing document {page_id}={self.page_id}:{self.title}:\n    {error}")
 
         else:
-            log.info(f"Article {self.title} is already in the database")
+            log.info(f"Article {self.title} is already in the database index {index}")
 
 
 def parse_article(article):
