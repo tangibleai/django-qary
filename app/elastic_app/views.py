@@ -9,10 +9,10 @@ import qary
 
 log = logging.warn(f"qary.__file__: {qary.__file__}")
 
-log = logging.warn(f"qary.constants: {qary.constants}")
+# log = logging.warn(f"qary.constants: {qary.constants}")
 
-# from qary.constants import DATA_DIR  # noqa
-# log = logging.warn(f"qary.constants.DATA_DIR: {DATA_DIR}")
+from qary.constants import DATA_DIR  # noqa
+log = logging.warn(f"qary.constants.DATA_DIR: {DATA_DIR}")
 
 # from qary import clibot  # noqa
 
