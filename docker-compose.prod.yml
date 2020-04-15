@@ -19,7 +19,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.prod
-    command: "gunicorn  -b 0.0.0.0:8000 -t 240 main_app.wsgi:application"
+    command: ['gunicorn', 'main_app.wsgi:application', '-t', '240', '-b', '0.0.0.0:8000']
     volumes:
       - "static_volume:/home/app/web/staticfiles"
       - "media_volume:/home/app/web/mediafiles"
