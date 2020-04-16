@@ -4,9 +4,9 @@ import wikipediaapi
 from slugify import slugify
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
-from search import search
+from .es_search import search
 
-from constants import ES_SCHEMA, ES_INDEX, ES_CATEGORIES
+from .constants import ES_SCHEMA, ES_INDEX, ES_CATEGORIES
 
 
 log = logging.getLogger(__name__)
@@ -156,14 +156,3 @@ def print_search_results(statement):
         print(doc['_source']['title'])
         print(doc['_source']['source'])
         print("----------------------")
-
-
-if __name__ == "__main__":
-
-    hits = search("When was Barack Obama inaugurated?").get('hits', {}).get('hits', [])
-    if not len(hits):
-        search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA)
-        hits = search("When was Barack Obama inaugurated?").get('hits', {}).get('hits', [])
-    for doc in hits:
-        for s in doc['_source'].values():
-            log.info(s)

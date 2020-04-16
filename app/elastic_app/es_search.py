@@ -3,7 +3,7 @@ import logging
 
 from elasticsearch import Elasticsearch
 
-from constants import ES_HOST, ES_PORT, ES_INDEX
+from .constants import ES_HOST, ES_PORT, ES_INDEX
 
 log = logging.getLogger(__name__)
 
@@ -86,7 +86,3 @@ def get_results(statement):
                 pass
 
     return results
-
-
-if __name__ == '__main__':
-    print(get_results("coronavirus"))
