@@ -45,3 +45,14 @@ def search_index(request):
     context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
 
     return render(request, 'elastic_app.html', context)
+
+
+def qa_index(request):
+
+    results = []
+    question = request.GET.get('question', "")
+
+    results = get_results(text=question, index='')
+    context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
+
+    return render(request, 'elastic_app.html', context)

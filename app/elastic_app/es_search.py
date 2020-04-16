@@ -24,8 +24,9 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
 
 def search(text="coronavirus", index=ES_INDEX):
     # client = connect_and_ping()  # Elasticsearch(f'{ES_HOST}:{ES_PORT}')
+    log.warn(f"Attempting to connect to '{ES_HOST}:9200'")
     client = Elasticsearch(ES_HOST + ':9200')
-    log.info(f"Attempting to search for text='{text}' in index='{index}'")
+    log.warn(f"Attempting to search for text='{text}'\n in index='{index}'\n")
     body = {
         "query": {
             "bool": {
@@ -67,12 +68,12 @@ def search(text="coronavirus", index=ES_INDEX):
 
 
 def get_results(statement):
-    query = search(text=statement)
+    query_results = search(text=statement)
     results = []
 
-    for doc in query['hits']['hits']:
+    for doc in query_results.get('hits', query_results).get('hits', query_results):
 
-        for highlight in doc['inner_hits']['text']['hits']['hits']:
+        for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
 
             try:
                 snippet = ' '.join(highlight['highlight']['text.section_content']),

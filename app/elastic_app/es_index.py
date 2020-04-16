@@ -4,19 +4,18 @@ import wikipediaapi
 from slugify import slugify
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
+
 from .es_search import search
-
-from .constants import ES_SCHEMA, ES_INDEX, ES_CATEGORIES
-
+from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX
 
 log = logging.getLogger(__name__)
 
 try:
     client = Elasticsearch("localhost:9200")
 except ConnectionRefusedError:
-    log.info("Failed to launch Elstcisearch")
+    log.error("Failed to launch Elasticsearch")
 
-wiki_wiki = wikipediaapi.Wikipedia('en')
+wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
 
 
 class Document:
@@ -27,7 +26,7 @@ class Document:
         self.source = ''
         self.text = ''
 
-    def count_duplicates(self, page_id, index=ES_INDEX):
+    def count_duplicates(self, page_id, index=''):
         """ Check if the article already exists in the database returning a total count """
         try:
             return client.search(index=index,
@@ -39,7 +38,7 @@ class Document:
             log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
         return None
 
-    def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
+    def insert(self, title, page_id, url='', text='', references=[], index=''):
         """ Add a new document to the index """
 
         self.title = title
@@ -128,7 +127,7 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA):
     for c in categories:
         try:
             # create empty index with predefined schema (data structure)
-            client.indices.create(index=slugify(c), body={"mappings": mapping})
+            client.indices.create(index=ES_INDEX, body={"mappings": mapping})
             log.info(f'New index {slugify(c)} has been created')
 
             # Retrieve Wikipedia article with list of article urls for the category `c`'''
