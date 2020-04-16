@@ -3,7 +3,7 @@ import logging
 
 from elasticsearch import Elasticsearch
 
-from .constants import ES_HOST, ES_PORT, ES_INDEX
+from constants import ES_HOST, ES_PORT, ES_INDEX
 
 log = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 from search import search
 
-from .constants import ES_SCHEMA, ES_INDEX, ES_CATEGORIES
+from constants import ES_SCHEMA, ES_INDEX, ES_CATEGORIES
 
 
 log = logging.getLogger(__name__)
