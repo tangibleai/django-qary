@@ -2,6 +2,7 @@
 import logging
 
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import NotFoundError
 
 from .constants import ES_HOST, ES_PORT, ES_INDEX
 
@@ -21,10 +22,10 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
     return CLIENT
 
 
-def search(index=ES_INDEX, text="coronavirus"):
+def search(text="coronavirus", index=ES_INDEX):
     # client = connect_and_ping()  # Elasticsearch(f'{ES_HOST}:{ES_PORT}')
     client = Elasticsearch(ES_HOST + ':9200')
-
+    log.info(f"Attempting to search for text='{text}' in index='{index}'")
     body = {
         "query": {
             "bool": {
@@ -58,7 +59,11 @@ def search(index=ES_INDEX, text="coronavirus"):
     }
 
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
-    return client.search(index=index, body=body)
+    try:
+        return client.search(body=body, index=index)
+    except NotFoundError as e:
+        log.error(f"{e}:\n    Unable to find any records, perhaps because there is no index named '{index}'")
+        return {}
 
 
 def get_results(statement):
