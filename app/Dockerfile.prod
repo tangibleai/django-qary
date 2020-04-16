@@ -25,7 +25,7 @@ RUN pip install flake8
 # RUN flake8 --exclude=env/ --ignore=E501,F401 .
 # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
 # RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
-RUN pip wheel --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 ###########################################################################################
 # Production container config

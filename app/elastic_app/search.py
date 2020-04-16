@@ -1,11 +1,11 @@
-import os
+# import os
 import logging
 
 from elasticsearch import Elasticsearch
 
-log = logging.getLogger(__name__)
-
 from .constants import ES_HOST, ES_PORT, ES_INDEX
+
+log = logging.getLogger(__name__)
 
 
 def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
@@ -21,7 +21,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
     return CLIENT
 
 
-def search(index=DEFAULT_INDEX, text="coronavirus"):
+def search(index=ES_INDEX, text="coronavirus"):
     # client = connect_and_ping()  # Elasticsearch(f'{ES_HOST}:{ES_PORT}')
     client = Elasticsearch(ES_HOST + ':9200')
 
