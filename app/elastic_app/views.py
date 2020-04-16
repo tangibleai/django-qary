@@ -2,7 +2,7 @@ import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .search import get_results
+from .es_search import get_results
 # from elasticsearch import Elasticsearch
 # import requests
 import qary
