@@ -6,12 +6,12 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
 from .es_search import search
-from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX
+from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
 
 log = logging.getLogger(__name__)
 
 try:
-    client = Elasticsearch("es:9200")
+    client = Elasticsearch(f"{ES_HOST}:{ES_PORT}")
 except ConnectionRefusedError:
     log.error("Failed to launch Elasticsearch")
 
@@ -38,7 +38,7 @@ class Document:
             log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
         return None
 
-    def insert(self, title, page_id, url='', text='', references=[], index=''):
+    def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
         """ Add a new document to the index """
 
         self.title = title
@@ -112,7 +112,7 @@ def get_references(mylist):
     return (content_list, reference_list)
 
 
-def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA):
+def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_INDEX):
     """ Retrieve all wikipedia pages associated with the categories listed in `categories`
 
     Input:
@@ -127,8 +127,8 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA):
     for c in categories:
         try:
             # create empty index with predefined schema (data structure)
-            client.indices.create(index=ES_INDEX, body={"mappings": mapping})
-            log.info(f'New index {slugify(c)} has been created')
+            client.indices.create(index=index, body={"mappings": mapping})
+            log.info(f'New index {index} has been created')
 
             # Retrieve Wikipedia article with list of article urls for the category `c`'''
             cat = wiki_wiki.page(f"Category:{c}")
@@ -140,7 +140,13 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA):
                     text = parse_article(page)
                     content, references = get_references(text)
                     doc = Document()
-                    doc.insert(page.title, page.pageid, page.fullurl, content, references, index=slugify(c))
+                    doc.insert(
+			title=page.title,
+			pageid=page.pageid,
+			url=page.fullurl,
+			text=content,
+			references=references,
+			index=index)
 
         except Exception as error:
             log.info(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
