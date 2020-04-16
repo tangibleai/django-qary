@@ -11,7 +11,7 @@ from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX
 log = logging.getLogger(__name__)
 
 try:
-    client = Elasticsearch("localhost:9200")
+    client = Elasticsearch("es:9200")
 except ConnectionRefusedError:
     log.error("Failed to launch Elasticsearch")
 
