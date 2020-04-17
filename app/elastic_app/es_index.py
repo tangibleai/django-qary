@@ -98,10 +98,6 @@ class Document:
                      'references': self.references}
 
         # wait 6 minutes for es server to come up
-        for i in range(360):
-            if client.ping():
-                break
-            time.sleep(0.987)
         if not self.count_duplicates(page_id):
 
             try:
@@ -174,6 +170,10 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
 
     wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
 
+    for i in range(10):
+        if client.ping():
+            break
+        time.sleep(0.987)
     for c in categories:
         try:
             # create empty index with predefined schema (data structure)
