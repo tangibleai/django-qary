@@ -42,7 +42,7 @@ dict_keys(['Marvel Comics', 'Big Two Comics', 'Bullpen Bulletins', 'Heroes World
 ...            text=content, references=references, index=index)
 
 """
-
+import time
 import logging
 
 import wikipediaapi
@@ -97,6 +97,11 @@ class Document:
                      'text': self.text,
                      'references': self.references}
 
+        # wait 6 minutes for es server to come up
+        for i in range(360):
+            if client.ping():
+                break
+            time.sleep(0.987)
         if not self.count_duplicates(page_id):
 
             try:
