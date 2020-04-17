@@ -1,12 +1,14 @@
-import os
+# import os
 import logging
 
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import NotFoundError
+
+from .constants import ES_HOST, ES_PORT, ES_INDEX
 
 log = logging.getLogger(__name__)
 
-ES_HOST = os.environ.get('ES_HOST', 'es')  # or localhost
-ES_PORT = os.environ.get('ES_PORT', '9200')  # or 9200
+CLIENT = None
 
 
 def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
@@ -22,10 +24,14 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
     return CLIENT
 
 
-def search(index='', text="coronavirus"):
+def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     # client = connect_and_ping()  # Elasticsearch(f'{ES_HOST}:{ES_PORT}')
-    client = Elasticsearch(ES_HOST + ':9200')
-
+    log.warning(f"Attempting to connect to '{host}:{port}'...")
+    client = Elasticsearch(f'{host}:{port}')
+    log.warning(f"Attempting to ping '{client}'...")
+    if not client.ping():
+        log.error(f"Unable to find ElasticSearch server at {host}:{port} using {client}")
+    log.warning(f"Attempting to search for text='{text}'\n in index='{index}'\n")
     body = {
         "query": {
             "bool": {
@@ -59,16 +65,20 @@ def search(index='', text="coronavirus"):
     }
 
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
-    return client.search(index=index, body=body)
+    try:
+        return client.search(body=body, index=index)
+    except NotFoundError as e:
+        log.error(f"{e}:\n    Unable to find any records, perhaps because there is no index named '{index}'")
+        return {}
 
 
 def get_results(statement):
-    query = search(text=statement)
+    query_results = search(text=statement)
     results = []
 
-    for doc in query['hits']['hits']:
+    for doc in query_results.get('hits', query_results).get('hits', query_results):
 
-        for highlight in doc['inner_hits']['text']['hits']['hits']:
+        for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
 
             try:
                 snippet = ' '.join(highlight['highlight']['text.section_content']),
@@ -87,7 +97,3 @@ def get_results(statement):
                 pass
 
     return results
-
-
-if __name__ == '__main__':
-    print(get_results("coronavirus"))

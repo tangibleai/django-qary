@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 
 def image_upload(request):
-    log.warn(f"image_upload: {request}")
+    log.warning(f"image_upload: {request}")
     if request.method == "POST" and request.FILES["image_file"]:
         image_file = request.FILES["image_file"]
         fs = FileSystemStorage()

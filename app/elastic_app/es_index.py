@@ -1,50 +1,21 @@
+import logging
+
 import wikipediaapi
 from slugify import slugify
 from elasticsearch import Elasticsearch
-from search import search
+from elasticsearch.exceptions import NotFoundError
+
+from .es_search import search
+from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
+
+log = logging.getLogger(__name__)
 
 try:
-    client = Elasticsearch("localhost:9200")
+    client = Elasticsearch(f"{ES_HOST}:{ES_PORT}")
 except ConnectionRefusedError:
-    print("Failed to launch Elstcisearch")
+    log.error("Failed to launch Elasticsearch")
 
-wiki_wiki = wikipediaapi.Wikipedia('en')
-
-mapping = {
-    "properties": {
-
-        "text": {
-            "type": "nested",
-            "properties": {
-                    "section_num": {"type": "integer"},
-                    "section_title": {"type": "text"},
-                    "section_content": {"type": "text"}
-            }
-        },
-
-        "references": {
-            "type": "nested",
-            "properties": {
-                    "section_num": {"type": "integer"},
-                    "section_title": {"type": "text"},
-                    "section_content": {"type": "text"}
-            }
-        },
-
-        "title": {
-            "type": "text"
-        },
-
-        "source": {
-            "type": "text"
-        },
-
-        "page_id": {
-            "type": "long"
-        },
-
-    }
-}
+wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
 
 
 class Document:
@@ -55,20 +26,20 @@ class Document:
         self.source = ''
         self.text = ''
 
-    def __if_exists(self, page_id, index=""):
-        '''
-        Check if the article already exists in the database
-        with a goal to avoid duplication
-        '''
+    def count_duplicates(self, page_id, index=''):
+        """ Check if the article already exists in the database returning a total count """
+        try:
+            return client.search(index=index,
+                                 body={"query":
+                                       {"match":
+                                        {"page_id": page_id}
+                                        }})['hits']['total']['value']
+        except NotFoundError as err:
+            log.warning(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
+        return None
 
-        return client.search(index=index,
-                             body={"query":
-                                   {"match":
-                                    {"page_id": page_id}
-                                    }})['hits']['total']['value']
-
-    def insert(self, title, page_id, url, text, references, index):
-        ''' Add a new document to the index'''
+    def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
+        """ Add a new document to the index """
 
         self.title = title
         self.page_id = page_id
@@ -81,16 +52,16 @@ class Document:
                      'text': self.text,
                      'references': self.references}
 
-        if self.__if_exists(page_id) == 0:
+        if not self.count_duplicates(page_id):
 
             try:
                 client.index(index=index, body=self.body)
-                print(f'Successfully added document {self.title} to index {index}.')
+                log.info(f'Successfully added document {self.title} to index {index}.')
             except Exception as error:
-                print(f"Error writing document {page_id}: {error}")
+                log.error(f"Error writing document {page_id}={self.page_id}:{self.title}:\n    {error}")
 
         else:
-            print(f"Article {self.title} is already in the database")
+            log.info(f"Article {self.title} is already in the database index {index}")
 
 
 def parse_article(article):
@@ -119,7 +90,7 @@ def parse_article(article):
             sections.append(section_dict)
             text = text.split(f"\n\n{title}")[0]
         else:
-            print(f"Skipping section {title} (empty)S.")
+            log.info(f"Skipping section {title} (empty)S.")
             pass
 
     return sections
@@ -141,36 +112,48 @@ def get_references(mylist):
     return (content_list, reference_list)
 
 
-def search_insert_wiki(category, mapping):
+def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_INDEX):
+    """ Retrieve all wikipedia pages associated with the categories listed in `categories`
 
-    if type(category) is not list:
-        category = [category]
+    Input:
+        categories (str or seq): sequence of strs or str with comma separated names of categories
+        mapping (dict): elastic search schema (called "mapping" in Elasticsearch documentation)
+    """
+    if isinstance(categories, str):
+        categories = [c.strip() for c in categories.split(',')]
 
-    wiki_wiki = wikipediaapi.Wikipedia('en')
+    wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
 
-    for c in category:
+    for c in categories:
         try:
-            '''Create and empty index with predefined data structure'''
-            client.indices.create(index=slugify(c), body={"mappings": mapping})
-            print(f'New index {slugify(c)} has been created')
+            # create empty index with predefined schema (data structure)
+            client.indices.create(index=index, body={"mappings": mapping})
+            log.info(f'New index {index} has been created')
 
-            '''Access the wikipedia article that lists wikipedia articles and urls in the category `c`'''
+            # Retrieve Wikipedia article with list of article urls for the category `c`'''
             cat = wiki_wiki.page(f"Category:{c}")
 
-            ''' Parse and add articles in the category to database'''
+            # Parse and add articles in the category to database
             for key in cat.categorymembers.keys():
                 page = wiki_wiki.page(key)
                 if "Category:" not in page.title:
                     text = parse_article(page)
                     content, references = get_references(text)
                     doc = Document()
-                    doc.insert(page.title, page.pageid, page.fullurl, content, references, index=slugify(c))
+                    doc.insert(
+                        title=page.title,
+                        pageid=page.pageid,
+                        url=page.fullurl,
+                        text=content,
+                        references=references,
+                        index=index)
 
         except Exception as error:
-            print(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
+            log.info(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
 
 
-def test_search(statement):
+def print_search_results(statement):
+    """ Search Elasticsearch for articles related to the provided statement and print them to the terminal """
     res = search(text=statement)
     print('Relevant articles from your ElasicSearch library:')
     print('===================')
@@ -178,28 +161,3 @@ def test_search(statement):
         print(doc['_source']['title'])
         print(doc['_source']['source'])
         print("----------------------")
-
-
-def test_index(category):
-    search_insert_wiki(category, mapping=mapping)
-
-
-if __name__ == "__main__":
-
-    # test_index('American science fiction television series')
-    test_search("when barack obama was inaugurated?")
-
-    # To add new categories to elasticsearch:
-    # categories = ['Marvel Comics',
-    #             'Machine learning',
-    #             'Marvel Comics editors-in-chief',
-    #             'American science fiction television series',
-    #             'Science fiction television',
-    #             'Natural language processing',
-    #             'American comics writers',
-    #             'Presidents of the United States',
-    #             'Coronaviridae',
-    #             'Pandemics'
-    #             ]
-
-    # search_insert_wiki(categories, mapping)
