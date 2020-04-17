@@ -1,39 +1,38 @@
 # import os
+import time
 import logging
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-from .constants import ES_HOST, ES_PORT, ES_INDEX
+from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX
 
 log = logging.getLogger(__name__)
 
 CLIENT = None
 
 
-def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
-    log.info("Connecting to ElasticSearch server at {host}:{port}...")
+def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None, retry_timeout=2):
+    t0 = time.time()
     global CLIENT
-    if CLIENT:
-        client = CLIENT
-    else:
+    log.info("Connecting to ElasticSearch server at {host}:{port} using {CLIENT}...")
+    if not CLIENT:
         log.info(f"Connecting to ElasticSearch server at {host}:{port}")
-        client = Elasticsearch(f'{host}:{port}')
-    if not client.ping():
-        log.error(f"Unable to find ElasticSearch server at {host}:{port}")
-        client = Elasticsearch(f'{host}:{port}')
-    CLIENT = client
+        CLIENT = Elasticsearch(f'{host}:{port}')
+    if CLIENT and not CLIENT.ping():
+        log.error(f"Unable to find ElasticSearch server at {host}:{port}\n    Trying for {retry_timeout}s more.")
+        CLIENT = Elasticsearch(f'{host}:{port}')
+        time.sleep(0.98765)
+        retry_timeout -= time.time() - t0
+        if retry_timeout > 0:
+            connect_and_ping(host=host, port=port, timeout=timeout, retry_timeout=retry_timeout)
     return CLIENT
 
 
 def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
-    # client = connect_and_ping()  # Elasticsearch(f'{host}:{port}')
     log.warn(f"Attempting to connect to '{host}:{port}'...")
-    client = Elasticsearch(f'{host}:{port}')
-    log.warn(f"Attempting to ping '{client}'...")
-    if not client.ping():
-        log.error(f"Unable to find ElasticSearch server at {host}:{port} using {client}")
-    log.warn(f"Attempting to search for text='{text}'\n in index='{index}'\n")
+    client = CLIENT or connect_and_ping(host=host, port=port, timeout=None, retry_timeout=0) or Elasticsearch(f'{host}:{port}')
+    log.warn(f"Attempting to search for text='{text}'\n in index='{index}' using client={client}\n")
     body = {
         "query": {
             "bool": {

@@ -60,7 +60,7 @@ class Document:
 
     def __init__(self, title='', page_id=None, source='', text='',
                  client=None, host=ES_HOST, port=ES_PORT):
-        self.client = client
+        self.client = client or connect_and_ping(host=host, port=port, retry_timeout=1.5)
         self.title = title
         self.page_id = page_id
         self.source = source
