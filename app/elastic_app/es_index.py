@@ -50,7 +50,7 @@ from slugify import slugify
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-from .es_search import search
+from .es_search import search, connect_and_ping, CLIENT
 from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
 
 log = logging.getLogger(__name__)
@@ -160,7 +160,7 @@ def get_references(mylist):
 
 
 def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_INDEX,
-                       client=None, host=ES_HOST, port=ES_PORT):
+                       client=CLIENT, host=ES_HOST, port=ES_PORT):
     """ Retrieve all wikipedia pages associated with the categories listed in `categories`
 
     Input:
@@ -174,6 +174,7 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
 
     wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
 
+    client = connect_and_ping(client)
     for i in range(10):
         if client.ping():
             break
