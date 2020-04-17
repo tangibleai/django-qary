@@ -1,3 +1,48 @@
+""" Utilities for adding documents to Elasticsearch database index
+
+$ CONTAINERID=$(docker ps | grep -E '.*django-qary_web' | cut -c -12)  # a53dbae601c8
+$ docker exec -it $CONTAINERID /bin/bash
+
+app@a53dbae601c8:~/web$ python manage.py shell
+
+>>> from elastic_app.es_index import *
+>>> client = Elasticsearch(f"{ES_HOST}:{ES_PORT}")
+>>> client
+<Elasticsearch([{'host': 'es', 'port': 9200}])>
+>>> client.ping()
+True
+>>> wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
+>>> c = ES_CATEGORIES[0]
+>>> c
+'Marvel Comics'
+>>> cat = wiki_wiki.page(f"Category:{c}")
+>>> k = cat.categorymembers.keys()
+>>> k
+dict_keys(['Marvel Comics', 'Big Two Comics', 'Bullpen Bulletins', 'Heroes World Distribution', ...
+>>> k = list(k)[0]
+>>> k
+'Marvel Comics'
+>>> page = wiki_wiki.page(k)
+>>> title = page.title.strip()
+>>> title
+'Marvel Comics'
+>>> text = parse_article(page)
+>>> text
+[{'section_num': 0, 'section_title': 'Summary', 'sec...
+>>> content, references = get_references(text)
+>>> references
+[{'section_num': 10,
+  'section_title': 'Notes',
+  'section_content': '\nReferences\nFurther reading\nExternal links\n Media related to Marvel ...
+>>> content
+[{'section_num': 0, 'section_title': 'Summary', 'section_content': "Marvel Comics is the brand name
+>>> doc = Document()
+# notice Document.page_id (from ES_SCHEMA) not Wikipedia.pageid (from wikipedia api)
+>>> doc.insert(title=title, page_id=page.pageid, url=page.fullurl,
+...            text=content, references=references, index=index)
+
+"""
+
 import logging
 
 import wikipediaapi
@@ -20,11 +65,11 @@ wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
 
 class Document:
 
-    def __init__(self):
-        self.title = ''
-        self.page_id = None
-        self.source = ''
-        self.text = ''
+    def __init__(self, title='', page_id=None, source='', text=''):
+        self.title = title
+        self.page_id = page_id
+        self.source = source
+        self.text = text
 
     def count_duplicates(self, page_id, index=''):
         """ Check if the article already exists in the database returning a total count """
@@ -127,8 +172,8 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
     for c in categories:
         try:
             # create empty index with predefined schema (data structure)
-            client.indices.create(index=index, body={"mappings": mapping})
-            log.info(f'New index {index} has been created')
+            # client.indices.create(index=index, body={"mappings": mapping})
+            # log.info(f'New index {index} has been created')
 
             # Retrieve Wikipedia article with list of article urls for the category `c`'''
             cat = wiki_wiki.page(f"Category:{c}")
@@ -136,17 +181,18 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
             # Parse and add articles in the category to database
             for key in cat.categorymembers.keys():
                 page = wiki_wiki.page(key)
-                if "Category:" not in page.title:
+                title = page.title.strip()
+                if not title.lower().startswith('category:'):
                     text = parse_article(page)
                     content, references = get_references(text)
                     doc = Document()
                     doc.insert(
-			title=page.title,
-			pageid=page.pageid,
-			url=page.fullurl,
-			text=content,
-			references=references,
-			index=index)
+                        title=title,
+                        page_id=page.pageid,
+                        url=page.fullurl,
+                        text=content,
+                        references=references,
+                        index=index)
 
         except Exception as error:
             log.info(f"The following exception occured while trying to create index '{slugify(c)}': ", error)

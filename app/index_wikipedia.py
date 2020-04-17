@@ -18,6 +18,12 @@ if __name__ == "__main__":
     if results is None or not len(results) or not len(results.get('hits', {}).get('hits', [])):
         search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA)
         hits = search(text="When was Barack Obama inaugurated?", index='').get('hits', {}).get('hits', [])
+        # curl -XPOST 'http://localhost:9200/wikipedia/tweet/' -d '{
+        #     "user" : "kimchy",
+        #     "post_date" : "2009-11-15T14:12:12",
+        #     "message" : "trying out Elasticsearch"
+        # }'
+
     for doc in hits:
         for s in doc['_source'].values():
             log.info(s)
