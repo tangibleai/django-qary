@@ -35,7 +35,7 @@ class Document:
                                         {"page_id": page_id}
                                         }})['hits']['total']['value']
         except NotFoundError as err:
-            log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
+            log.warning(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
         return None
 
     def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
@@ -141,12 +141,12 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
                     content, references = get_references(text)
                     doc = Document()
                     doc.insert(
-			title=page.title,
-			pageid=page.pageid,
-			url=page.fullurl,
-			text=content,
-			references=references,
-			index=index)
+                        title=page.title,
+                        pageid=page.pageid,
+                        url=page.fullurl,
+                        text=content,
+                        references=references,
+                        index=index)
 
         except Exception as error:
             log.info(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
