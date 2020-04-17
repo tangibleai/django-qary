@@ -11,10 +11,15 @@ from elasticsearch.exceptions import NotFoundError
 log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
+    results = None
     try:
         results = search(text="When was Barack Obama inaugurated?", index='')
     except NotFoundError:
-        log.warn('No indexexes found.')
+        log.warning('No indexexes found.')
+    except ConnectionRefusedError as e:
+        log.warning(f'{e}')
+    except:  # noqa
+        pass
     if results is None or not len(results) or not len(results.get('hits', {}).get('hits', [])):
         search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA)
         hits = search(text="When was Barack Obama inaugurated?", index='').get('hits', {}).get('hits', [])
