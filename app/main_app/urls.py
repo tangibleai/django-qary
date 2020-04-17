@@ -1,4 +1,4 @@
-"""hello_django URL Configuration
+"""main_app URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.2/topics/http/urls/
@@ -14,15 +14,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
 from upload.views import image_upload
+from elastic_app import views  # noqa
+
 
 urlpatterns = [
-    path("", image_upload, name="upload"),
+    path("upload/", image_upload, name="upload"),
     path('admin/', admin.site.urls),
+    path('', include('elastic_app.urls'))
 ]
 
 if bool(settings.DEBUG):
