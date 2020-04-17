@@ -1,7 +1,7 @@
 ########################################################################################
 # Production BUILDER container (see below for actual final container Dockerfile)
 #
-FROM python:3.7.0-alpine as builder
+FROM python:3.7-buster as builder
 
 WORKDIR /usr/src/app
 
@@ -10,7 +10,8 @@ WORKDIR /usr/src/app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+# will complain about apt-utils so netcat won't be configured based on the terminal settings
+RUN apt-get update && apt-get install -y netcat postgresql-client gcc python3-dev musl-dev libpq-dev
 
 # copy django project from host (including requirements.txt) into container
 COPY . /usr/src/app/
@@ -21,48 +22,50 @@ RUN pip install flake8
 # F401=unused import ; E501=line too long
 # SEE: flake8.pycqa.org/en/2.6.0/warnings.html#error-codes
 # COPY . /usr/src/app/
-RUN flake8 --exclude=env/ --ignore=E501,F401 .
+# RUN flake8 --exclude=env/ --ignore=E501,F401 .
 # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 ###########################################################################################
 # Production container config
 #
-FROM python:3.7.0-alpine
 
-# create directory for the app user
-RUN mkdir -p /home/app
+FROM python:3.7-buster
 
-# create the app user
-RUN addgroup -S app && adduser -S app -G app
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# create the appropriate directories
+# netcat for checking when services are up
+# libpq-dev for postgres header files (python psycopg package)
+RUN apt-get update && \
+    apt-get install -y apt-utils && \
+    apt-get install -y libpq-dev netcat
+
+
+# create the app user and its /home/app/
+RUN addgroup --system app && \
+    adduser --system --group app
+USER app
 ENV HOME=/home/app
+ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV APP_HOME=/home/app/web
-RUN mkdir -p $APP_HOME/staticfiles
-RUN mkdir -p $APP_HOME/mediafiles
-RUN mkdir -p $APP_HOME/midata
+RUN mkdir -p $APP_HOME/staticfiles/admin && \
+    mkdir -p $APP_HOME/mediafiles && \
+    mkdir -p $APP_HOME/midata
 WORKDIR $APP_HOME
+COPY . $APP_HOME
+# COPY . .
+# RUN chown -R app:app $APP_HOME
+# RUN chmod -R ug+rwx $APP_HOME
+# RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 
-# install dependencies
-RUN apk update && apk add libpq
+
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
-# Step 21/27 : RUN pip install --upgrade pip
-#  ---> Running in 29dfb74c1632
-# The directory '/home/app/.cache/pip/http' or its parent directory is not owned by the current user and the cache has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
-# The directory '/home/app/.cache/pip' or its parent directory is not owned by the current user and caching wheels has been disabled. check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
+RUN pip install -r requirements.txt
+# RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
 
-RUN pip install --no-cache /wheels/*
+COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
-COPY ./migrate_db.prod.sh $APP_HOME
-
-# copy project
-COPY . $APP_HOME
-
-RUN chown -R app:app $APP_HOME
-
-USER app
-
-ENTRYPOINT ["/home/app/web/migrate_db.prod.sh"]
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]

@@ -1,8 +1,12 @@
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
 
+import logging
+log = logging.getLogger(__name__)
+
 
 def image_upload(request):
+    log.warn(f"image_upload: {request}")
     if request.method == "POST" and request.FILES["image_file"]:
         image_file = request.FILES["image_file"]
         fs = FileSystemStorage()

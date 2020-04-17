@@ -12,3 +12,7 @@ app/env/*
 # web media and static files
 app/staticfiles/*
 app/mediafiels/*
+
+# cache folders
+__pycache__
+.vscode
