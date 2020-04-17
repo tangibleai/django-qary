@@ -24,12 +24,12 @@ RUN pip install flake8
 # COPY . /usr/src/app/
 # RUN flake8 --exclude=env/ --ignore=E501,F401 .
 # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+# RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+RUN pip wheel --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 ###########################################################################################
 # Production container config
 #
-
 FROM python:3.7-buster
 
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -58,7 +58,6 @@ COPY . $APP_HOME
 # RUN chown -R app:app $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
-
 
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .

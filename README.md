@@ -39,11 +39,14 @@ Or:
 $ ./scripts/build.sh dev
 ```
 
-<<<<<<< HEAD
-
-=======
 ### Production Environment (typically Linux Docker server)
->>>>>>> unstable
+
+```bash
+$ ./scripts/build.sh prod
+```
+
+### Production Environment (typically Linux Docker server)
+
 
 To build and run the production containers:
 
