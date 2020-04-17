@@ -55,30 +55,32 @@ from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
 
 log = logging.getLogger(__name__)
 
-try:
-    client = Elasticsearch(f"{ES_HOST}:{ES_PORT}")
-except ConnectionRefusedError:
-    log.error("Failed to launch Elasticsearch")
-
-wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
-
 
 class Document:
 
-    def __init__(self, title='', page_id=None, source='', text=''):
+    def __init__(self, title='', page_id=None, source='', text='',
+                 client=None, host=ES_HOST, port=ES_PORT):
+        self.client = client
         self.title = title
         self.page_id = page_id
         self.source = source
         self.text = text
 
+        if not self.client or not self.client.ping():
+            try:
+                self.client = Elasticsearch(f"{host}:{port}")
+            except ConnectionRefusedError:
+                log.error("Failed to connect to Elasticsearch on {host}:{port}")
+
     def count_duplicates(self, page_id, index=''):
         """ Check if the article already exists in the database returning a total count """
         try:
-            return client.search(index=index,
-                                 body={"query":
-                                       {"match":
-                                        {"page_id": page_id}
-                                        }})['hits']['total']['value']
+            return self.client.search(
+                index=index,
+                body={"query":
+                      {"match":
+                       {"page_id": page_id}
+                       }})['hits']['total']['value']
         except NotFoundError as err:
             log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
         return None
@@ -99,9 +101,8 @@ class Document:
 
         # wait 6 minutes for es server to come up
         if not self.count_duplicates(page_id):
-
             try:
-                client.index(index=index, body=self.body)
+                self.client.index(index=index, body=self.body)
                 log.info(f'Successfully added document {self.title} to index {index}.')
             except Exception as error:
                 log.error(f"Error writing document {page_id}={self.page_id}:{self.title}:\n    {error}")
@@ -158,13 +159,16 @@ def get_references(mylist):
     return (content_list, reference_list)
 
 
-def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_INDEX):
+def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_INDEX,
+                       client=None, host=ES_HOST, port=ES_PORT):
     """ Retrieve all wikipedia pages associated with the categories listed in `categories`
 
     Input:
         categories (str or seq): sequence of strs or str with comma separated names of categories
         mapping (dict): elastic search schema (called "mapping" in Elasticsearch documentation)
     """
+
+    wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
     if isinstance(categories, str):
         categories = [c.strip() for c in categories.split(',')]
 
@@ -173,6 +177,7 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
     for i in range(10):
         if client.ping():
             break
+        log.warn(f"Can't connect to {ES_HOST}:{ES_PORT} after {i+1} attempts")
         time.sleep(0.987)
     for c in categories:
         try:
@@ -190,7 +195,7 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
                 if not title.lower().startswith('category:'):
                     text = parse_article(page)
                     content, references = get_references(text)
-                    doc = Document()
+                    doc = Document(client=client, host=host, port=port)
                     doc.insert(
                         title=title,
                         page_id=page.pageid,
