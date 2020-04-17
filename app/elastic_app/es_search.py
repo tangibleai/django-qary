@@ -27,7 +27,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
 def search(text="coronavirus", index=ES_INDEX):
     # client = connect_and_ping()  # Elasticsearch(f'{ES_HOST}:{ES_PORT}')
     log.warn(f"Attempting to connect to '{ES_HOST}:9200'...")
-    client = Elasticsearch(ES_HOST + ':9200')
+    client = Elasticsearch(f'{ES_HOST}:{ES_PORT}')
     log.warn(f"Attempting to ping '{client}'...")
     if not client.ping():
         log.error(f"Unable to find ElasticSearch server at {host}:{port} using {client}")
