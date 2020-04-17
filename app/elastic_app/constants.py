@@ -1,9 +1,18 @@
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
-ES_HOST = os.environ.get('ES_HOST', 'es')  # or localhost
+ES_HOST = os.environ.get('ES_HOST', 'es').strip()  # or localhost
 ES_PORT = os.environ.get('ES_PORT', '9200')  # or 9200
 ES_INDEX = 'wikipedia'
+
+try:
+    ES_PORT = int(ES_PORT)
+except ValueError:
+    log.error(f"Invalid port number for ES_PORT: {ES_PORT}")
+    ES_PORT = 9200
 
 
 ES_CATEGORIES = (

@@ -12,14 +12,16 @@ CLIENT = None
 
 
 def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None):
+    log.info("Connecting to ElasticSearch server at {host}:{port}...")
     global CLIENT
     if CLIENT:
         client = CLIENT
     else:
         log.info(f"Connecting to ElasticSearch server at {host}:{port}")
-        client = Elasticsearch(host=host, port=port)
+        client = Elasticsearch(f'{host}:{port}')
     if not client.ping():
         log.error(f"Unable to find ElasticSearch server at {host}:{port}")
+        client = Elasticsearch(f'{host}:{port}')
     CLIENT = client
     return CLIENT
 
