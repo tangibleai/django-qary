@@ -181,6 +181,7 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
         log.warn(f"Can't connect to {ES_HOST}:{ES_PORT} after {i+1} attempts")
         time.sleep(0.987)
     for c in categories:
+        log.warn(f"Downloading Wikipedia Articles for Category:{c}")
         try:
             # create empty index with predefined schema (data structure)
             # client.indices.create(index=index, body={"mappings": mapping})
@@ -193,6 +194,7 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
             for key in cat.categorymembers.keys():
                 page = wiki_wiki.page(key)
                 title = page.title.strip()
+                log.info(f"Found Category:{c}\n    Title: {title}\n    Key: {key}\n")
                 if not title.lower().startswith('category:'):
                     text = parse_article(page)
                     content, references = get_references(text)
