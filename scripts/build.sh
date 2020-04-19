@@ -60,7 +60,9 @@ then
 elif [ "$1" == 'shell' ]
 then
     echo "exec -it on $NODE_NAME then python manage.py shell"
-    export CONTAINERID=$(docker ps | grep -E '.*django-qary_web' | cut -c -12)  # a53dbae601c8
+    export GREP_OPTIONS=
+    export CONTAINERID=$(docker ps | grep -E '.*django-qary_'$NODE_NAME | cut -c -12)
+    echo "found node named $NODE_NAME at containerid $CONTAINERID"
     docker exec -it $CONTAINERID /bin/bash
 else
     echo "USAGE ./build.sh [prod|wiki|dev|stop|up|shell]"
