@@ -34,8 +34,8 @@ def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     log.warn(f"Attempting to connect to '{host}:{port}'...")
     client = CLIENT or connect_and_ping(host=host, port=port, timeout=None, retry_timeout=0) or Elasticsearch(f'{host}:{port}')
     log.warn(f"Attempting to search for text='{text}'\n in index='{index}' using client={client}\n")
-    # body = {"query": {"bool": {"must": {"query_string": {"query": str(text)}},
-    #                            "should": [{"match": {"title": {'query': text, "boost": 3}}}]}}}
+    body = {"query": {"bool": {"must": {"query_string": {"query": str(text)}},
+                               "should": [{"match": {"title": {'query': text, "boost": 3}}}]}}}
     body = {
         "query": {
             "bool": {
