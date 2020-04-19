@@ -55,13 +55,13 @@ then
 elif [ "$1" == 'up' ]
 then
     echo ""
-    echo "Bringing up docker-compose.PROD.yml docker images..."
-    docker-compose -f docker-compose.prod.yml up $NODE_NAME -d
+    echo "Bringing up docker-compose.PROD.yml docker image named $NODE_NAME ..."
+    docker-compose -f docker-compose.prod.yml up -d
 elif [ "$1" == 'shell' ]
 then
     echo "exec -it on $NODE_NAME then python manage.py shell"
     export GREP_OPTIONS=
-    export CONTAINERID=$(docker ps | grep -E '.*django-qary_'$NODE_NAME | cut -c -12)
+    export CONTAINERID=$(docker ps | grep -E '.*django-qary_web' | cut -c -12)
     echo "found node named $NODE_NAME at containerid $CONTAINERID"
     docker exec -it $CONTAINERID /bin/bash
 else

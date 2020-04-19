@@ -49,8 +49,8 @@ ENV HOME=/home/app
 ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles/admin && \
-    mkdir -p $APP_HOME/mediafiles && \
-    mkdir -p $APP_HOME/midata
+    mkdir -p $APP_HOME/mediafiles
+#    mkdir -p $APP_HOME/midata
 WORKDIR $APP_HOME
 COPY . $APP_HOME
 # COPY . .
