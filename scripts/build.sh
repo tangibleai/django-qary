@@ -56,7 +56,7 @@ elif [ "$1" == 'up' ]
 then
     echo ""
     echo "Bringing up docker-compose.PROD.yml docker images..."
-    docker-compose -f docker-compose.prod.yml up
+    docker-compose -f docker-compose.prod.yml up $NODE_NAME -d
 elif [ "$1" == 'shell' ]
 then
     echo "exec -it on $NODE_NAME then python manage.py shell"

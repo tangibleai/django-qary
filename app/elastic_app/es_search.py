@@ -43,7 +43,7 @@ def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
         return client.search(body=body, index=index)
     except NotFoundError as e:
         log.error(f"{e}:\n    Unable to find any records on {host}:{port}, "
-                  "perhaps because there is no index named '{index}'")
+                  f"perhaps because there is no index named '{index}'")
         return {}
 
 
