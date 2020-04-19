@@ -46,11 +46,11 @@ import time
 import logging
 
 import wikipediaapi
-from slugify import slugify
+# from slugify import slugify
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-from .es_search import search, connect_and_ping, CLIENT
+from .es_search import search_hits, connect_and_ping, CLIENT
 from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
 
 log = logging.getLogger(__name__)
@@ -101,6 +101,7 @@ class Document:
 
         # wait 6 minutes for es server to come up
         if not self.count_duplicates(page_id):
+            log.warning(f"page_id: {self.page_id}\n    is not in index:{index}\n    so adding it title: {self.title}")
             try:
                 self.client.index(index=index, body=self.body)
                 log.info(f'Successfully added document {self.title} to index {index}.')
@@ -175,29 +176,36 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
     wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
 
     client = connect_and_ping(client)
-    for i in range(10):
+    for i in range(60):
         if client.ping():
             break
-        log.warn(f"Can't connect to {ES_HOST}:{ES_PORT} after {i+1} attempts")
+        log.warning(f"Can't connect to {ES_HOST}:{ES_PORT} after {i+1} attempts")
         time.sleep(0.987)
-    for c in categories:
-        log.warn(f"Downloading Wikipedia Articles for Category:{c}")
+    for cat in categories:
+        log.warning(f"Downloading Wikipedia Articles for Category:{cat}")
+        # create empty index with predefined schema (data structure)
+        # client.indices.create(index=index, body={"mappings": mapping})
+        # log.info(f'New index {index} has been created')
+
+        # Retrieve Wikipedia article with list of article urls for the category `c`'''
+        hits = search_hits(text=cat, index=index, host=host, port=port)
+        if len(hits) >= 9:
+            continue
         try:
-            # create empty index with predefined schema (data structure)
-            # client.indices.create(index=index, body={"mappings": mapping})
-            # log.info(f'New index {index} has been created')
+            cat = wiki_wiki.page(f"Category:{cat}")
+        except Exception as err:
+            log.error(f"The following exception occured while trying to retrieve wikipedia 'Category:{cat}':\n   {err}")
 
-            # Retrieve Wikipedia article with list of article urls for the category `c`'''
-            cat = wiki_wiki.page(f"Category:{c}")
-
-            # Parse and add articles in the category to database
-            for key in cat.categorymembers.keys():
-                page = wiki_wiki.page(key)
-                title = page.title.strip()
-                log.info(f"Found Category:{c}\n    Title: {title}\n    Key: {key}\n")
-                if not title.lower().startswith('category:'):
-                    text = parse_article(page)
-                    content, references = get_references(text)
+        # Parse and add articles in the category to database
+        for key in cat.categorymembers.keys():
+            page = wiki_wiki.page(key)
+            title = page.title.strip()
+            log.info(f"Found Category:{cat}\n    Title: {title}\n    Key: {key}\n")
+            if not title.lower().startswith('category:'):
+                log.warning(f"Adding page title {title} to index {index}")
+                text = parse_article(page)
+                content, references = get_references(text)
+                try:
                     doc = Document(client=client, host=host, port=port)
                     doc.insert(
                         title=title,
@@ -206,17 +214,16 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
                         text=content,
                         references=references,
                         index=index)
-
-        except Exception as error:
-            log.info(f"The following exception occured while trying to create index '{slugify(c)}': ", error)
+                except Exception as err:
+                    log.error(f"The following exception occured while trying to retrieve wikipedia 'Category:{cat}':\n   {err}")
 
 
 def print_search_results(statement):
     """ Search Elasticsearch for articles related to the provided statement and print them to the terminal """
-    res = search(text=statement)
+    hits = search_hits(text=statement)
     print('Relevant articles from your ElasicSearch library:')
     print('===================')
-    for doc in res['hits']['hits']:
+    for doc in hits:
         print(doc['_source']['title'])
         print(doc['_source']['source'])
         print("----------------------")
