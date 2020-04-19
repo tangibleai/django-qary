@@ -17,9 +17,14 @@ sudo ln -s /mnt/volume_sfo2_01 ~/midata
 sudo chown -R root:docker ~/midata
 sudo chmod -R g+rwx ~/midata
 sudo chmod -R +rwx ~/midata
-mkdir -p ~/midata/public/chatbot
-mkdir -p ~/midata/public/models
-mkdir -p ~/midata/public/talks
+mkdir -p $/midata/public/chatbot
+mkdir -p $/midata/public/models
+mkdir -p $/midata/public/talks
+mkdir -p $HOME/midata/private/static_volume
+mkdir -p $HOME/midata/private/media_volume
+mkdir -p $HOME/midata/private/esdata
+mkdir -p $HOME/midata/private/postgres_data
+chown -R 1000:1000 $HOME/midata/private
 
 # get rid of some large files to conserve disk space on the digital ocean block storage volume
 rm -rf ~/midata/public/talks/2016-05-01--CivicU-Machine-Learning/.git
