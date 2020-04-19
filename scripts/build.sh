@@ -45,4 +45,6 @@ then
     echo "STOPPING ALL CONTAINERS!!!"
     docker-compose -f docker-compose.prod.yml down -v --remove-orphans
     docker-compose -f docker-compose.dev.yml down -v --remove-orphans
+else
+    echo "USAGE ./build.sh [prod|dev|stop]"
 fi
