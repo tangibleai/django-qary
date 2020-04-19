@@ -49,7 +49,7 @@ def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
 
 def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     raw_results = search(text=text, index=index, host=host, port=port)
-    return results.get('hits', {}).get('hits', [])
+    return raw_results.get('hits', {}).get('hits', [])
 
 
 def get_results(statement):
