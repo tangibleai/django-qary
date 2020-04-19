@@ -50,9 +50,8 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles/admin && \
     mkdir -p $APP_HOME/mediafiles
-#    mkdir -p $APP_HOME/midata
+    mkdir -p $APP_HOME/midata
 WORKDIR $APP_HOME
-COPY . $APP_HOME
 # COPY . .
 # RUN chown -R app:app $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME
@@ -63,6 +62,7 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+COPY . .
 # RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
