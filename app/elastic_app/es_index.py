@@ -175,11 +175,12 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
 
     wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
 
-    client = connect_and_ping(client)
+    client = connect_and_ping(host=host, port=port)
     for i in range(60):
         if client.ping():
             break
-        log.warning(f"Can't connect to {ES_HOST}:{ES_PORT} after {i+1} attempts")
+        client = connect_and_ping(host=host, port=port)
+        log.warning(f"Can't connect to {host}:{port} after {i+1} attempts")
         time.sleep(0.987)
     for cat in categories:
         log.warning(f"Downloading Wikipedia Articles for Category:{cat}")
