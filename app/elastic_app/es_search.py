@@ -75,13 +75,14 @@ def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     return raw_results.get('hits', {}).get('hits', [])
 
 
-def get_results(statement):
-    query_results = search(text=statement)
+def get_results(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+    query_results = search(text=statement, index=index, host=host, port=port)
     results = []
 
     for doc in query_results.get('hits', query_results).get('hits', query_results):
         log.info('str(doc)')
 
+        results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score'))
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
 
             try:
