@@ -75,31 +75,27 @@ def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     return raw_results.get('hits', {}).get('hits', [])
 
 
-def get_results(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+    """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
-
     for doc in query_results.get('hits', query_results).get('hits', query_results):
         log.info('str(doc)')
-
-        results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score'))
+        results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
-
             try:
                 snippet = ' '.join(highlight['highlight']['text.section_content']),
                 # snippet.encode(encoding='UTF-8',errors='strict')
-                mytuple = (doc['_source']['title'],
-                           doc['_score'],
-                           doc['_source']['source'],
-                           snippet[0],
-                           highlight['_source']['section_num'],
-                           highlight['_source']['section_title'],
-                           highlight['_score'],
-                           doc)
-
-                results.append(mytuple)
-
+                mytuple = (
+                    doc['_source']['title'],
+                    doc['_score'],
+                    doc['_source']['source'],
+                    snippet[0],
+                    highlight['_source']['section_num'],
+                    highlight['_source']['section_title'],
+                    highlight['_score'],
+                    doc)
+                results.append(dict(list(zip(range(len(mytuple), mytuple)))))
             except:  # noqa
                 pass
-
     return results
