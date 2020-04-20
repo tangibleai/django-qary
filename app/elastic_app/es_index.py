@@ -39,7 +39,7 @@ dict_keys(['Marvel Comics', 'Big Two Comics', 'Bullpen Bulletins', 'Heroes World
 >>> doc = Document()
 # notice Document.page_id (from ES_SCHEMA) not Wikipedia.pageid (from wikipedia api)
 >>> doc.insert(title=title, page_id=page.pageid, url=page.fullurl,
-...            text=content, references=references, index=index)
+...            text=content, references=references, index='wikipedia')
 
 """
 import time
