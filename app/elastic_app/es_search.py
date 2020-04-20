@@ -80,6 +80,7 @@ def get_results(statement):
     results = []
 
     for doc in query_results.get('hits', query_results).get('hits', query_results):
+        log.info('str(doc)')
 
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
 
@@ -92,7 +93,8 @@ def get_results(statement):
                            snippet[0],
                            highlight['_source']['section_num'],
                            highlight['_source']['section_title'],
-                           highlight['_score'])
+                           highlight['_score'],
+                           doc)
 
                 results.append(mytuple)
 
