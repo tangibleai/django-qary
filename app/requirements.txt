@@ -6,7 +6,8 @@ qary>=0.3.10
 # -e git+https://gitlab.com/tangibleai/qary.git#egg=qary
 djangorestframework
 requests==2.23.0
-elasticsearch==7.6.0
+elasticsearch==7.5.1
+# elasticsearch==7.5.1
 wikipedia-api==0.5.4
 python-slugify==4.0.0
 django-elasticsearch-dsl==7.1.1
