@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
 import os
 
 
@@ -45,6 +44,7 @@ UPLOAD_TEMPLATE_DIR = os.path.join(BASE_DIR, "upload/templates")
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
+assert len(SECRET_KEY.strip()) > 32
 
 DEBUG = int(os.environ.get("DEBUG", default=1))
 
@@ -52,6 +52,8 @@ DEBUG = int(os.environ.get("DEBUG", default=1))
 # For example: 'DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]'
 # ALLOWED_HOSTS = 'totalgood.org gpu.totalgood.org www.totalgood.org localhost 127.0.0.1 [::1]'.split()
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split()
+assert len(ALLOWED_HOSTS) > 2
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -70,6 +72,7 @@ INSTALLED_APPS = [
     'elastic_app',
 
     'django_elasticsearch_dsl',
+    'django_extensions',
     'rest_framework',
     'django_elasticsearch_dsl_drf'
 ]
