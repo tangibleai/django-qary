@@ -9,7 +9,9 @@ from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED
 
 from qary.clibot import CLIBot
 
-BOT = CLIBot(bots='glossary,faq'.split(','))
+BOT_PERSONALITIES = 'glossary,faq'.split(',')
+
+BOT = CLIBot(bots=BOT_PERSONALITIES)
 
 
 log = logging.getLogger(__name__)

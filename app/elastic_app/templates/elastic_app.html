@@ -26,6 +26,9 @@
 <body>
 
 
+    <div class="heading">
+        <h4>Duchess Personalities: {{ personalities | safe }} </h4>
+    </div>
     <div class="container">
         <div class="search results">
         {% if results %}
@@ -36,10 +39,10 @@
                     {% if r.reply %}
                     <h6 class="card-title"> Duchess: {{ r.reply }}  </h6>
                     {% endif %}
-                    <h6 class="card-title"> {{ r.0 }} | {{ r.5 }}  </h6>
+                    <h6 class="card-title"> {{ r.title }} | {{ r.section_name }}  </h6>
                     <p class="card-text">
-                        {{ r.3 | safe }}
-                        <br>Article score: {{ r.1 }} | Section score: {{ r.6 }}
+                        {{ r.snippet | safe }}
+                        <br>Article score: {{ r.score }} | Section score: {{ r.section_score }}
                     </p>
                     <a href="{{ r.2 }}">Go to Wikipedia</a>
                 </div class="card-body">

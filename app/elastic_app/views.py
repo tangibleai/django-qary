@@ -2,7 +2,7 @@ import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .es_search import search_tuples
+from .es_search import search_tuples, BOT_PERSONALITIES
 # from elasticsearch import Elasticsearch
 # import requests
 import qary
@@ -42,8 +42,10 @@ def search_index(request):
         question = request.GET['query']
 
     results = search_tuples(question)
-    context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
-
+    context = {
+        'results': results,
+        'personalities': BOT_PERSONALITIES
+    }
     return render(request, 'elastic_app.html', context)
 
 
