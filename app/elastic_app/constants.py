@@ -84,7 +84,7 @@ def ES_QUERY_TITLE_TEXT_HIGHLIGHT_WIP(query):
                                "should": [{"match": {"title": {'query': query, "boost": 3}}}]}}}
 
 
-def ES_QUERY_NESTED_BROKE(query):
+def ES_QUERY_NESTED(query):
     return {"query": {"bool": {"should": [{"match": {"title": {'query': query, "boost": 3}}},
                                           {"nested": {"path": "text", "query":
                                                       {"bool": {"should": [{"term": {"text.section_num": 0}},
