@@ -33,12 +33,39 @@ services:
       - redis
 
   redis:
-    image: redis:alpine
-    container_name: rz01
+    image: redis:latest
+    container_name: rd01
     expose:
       - 6379
-    # ports:
-    #   - "6379:6379"
+
+  celery:
+    build: .
+    volumes:
+      - .:/src
+    container_name: cl01
+    command: celery -A server worker -l info
+    links:
+      - redis
+
+  webapp:
+    build: .
+    container_name: wa01
+    ports:
+      - "8000:8000"
+    links:
+      - redis
+    depends_on:
+      - redis
+
+
+  celery:
+    build: .
+    volumes:
+      - .:/src
+    container_name: cl01
+    command: celery -A server worker -l info
+    links:
+      - redis
 
   db:
     image: postgres:12.0-alpine
