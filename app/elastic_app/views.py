@@ -2,7 +2,7 @@ import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .es_search import get_results
+from .es_search import search_tuples
 # from elasticsearch import Elasticsearch
 # import requests
 import qary
@@ -28,7 +28,7 @@ def index(request):
 
 
 def test_connection(request):
-    results = get_results("When was stan Lee born?")
+    results = search_tuples("When was stan Lee born?")
     ser_res = JsonResponse(results, safe=False)
     return HttpResponse(ser_res, content_type='application/json')
 
@@ -41,7 +41,7 @@ def search_index(request):
     if request.GET.get('query'):
         question = request.GET['query']
 
-    results = get_results(question)
+    results = search_tuples(question)
     context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
 
     return render(request, 'elastic_app.html', context)
@@ -52,7 +52,7 @@ def qa_index(request):
     results = []
     question = request.GET.get('question', "")
 
-    results = get_results(text=question, index='')
+    results = search_tuples(text=question, index='')
     context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
 
     return render(request, 'elastic_app.html', context)

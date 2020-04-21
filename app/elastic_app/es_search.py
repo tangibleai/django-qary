@@ -34,38 +34,33 @@ def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     log.warn(f"Attempting to connect to '{host}:{port}'...")
     client = CLIENT or connect_and_ping(host=host, port=port, timeout=None, retry_timeout=0) or Elasticsearch(f'{host}:{port}')
     log.warn(f"Attempting to search for text='{text}'\n in index='{index}' using client={client}\n")
-    body = {"query": {"bool": {"must": {"query_string": {"query": str(text)}},
+    body = {"query": {"bool": {"must": {"query_string": {'query': text, 'lenient': 'true'}},
                                "should": [{"match": {"title": {'query': text, "boost": 3}}}]}}}
-    body = {
-        "query": {
-            "bool": {
-                "should": [
-                    {"match": {"title": {
-                        'query': text,
-                        "boost": 3
-                    }}},
-                    {
-                        "nested": {
-                            "path": "text",
-                            "query": {
-                                "bool": {
-                                    "should": [
-                                        {"term": {"text.section_num": 0}},
-                                        {"match": {"text.section_content": text}}
-                                    ]
-                                }
-                            },
-                            "inner_hits": {
-                                "highlight": {
-                                    "fields": {"text.section_content": {"number_of_fragments": 3, 'order': "score"}}
-                                }
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    }
+    # body = {
+    #     "query": {
+    #         "bool": {
+    #             "should": [{
+    #                 "match": {"title": {'query': text, "lenient": 'true', "boost": 3}}}, {
+    #                 "nested": {
+    #                     "path": "text", "query": {
+    #                         "bool": {
+    #                             "should": [{
+    #                                 "term": {"text.section_num": 0}}, {
+    #                                 "match": {"text.section_content": text}}
+    #                             ]
+    #                         }
+    #                     },
+    # "inner_hits": {
+    #     "highlight": {
+    #         "fields": {
+    #             "text.section_content": {"number_of_fragments": 3, 'order': "score"}}
+    #     }
+    # }
+    #                 }}
+    #             ]
+    #         }
+    #     }
+    # }
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     try:
         return client.search(body=body, index=index)
@@ -76,32 +71,32 @@ def search(text="coronavirus", index=ES_INDEX, host=ES_HOST, port=ES_PORT):
 
 
 def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+    """ Returns inner hits list of objects from Elasticsearch results for query `text` """
     raw_results = search(text=text, index=index, host=host, port=port)
     return raw_results.get('hits', {}).get('hits', [])
 
 
-def get_results(statement):
-    query_results = search(text=statement)
+def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+    """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
+    query_results = search(text=statement, index=index, host=host, port=port)
     results = []
-
     for doc in query_results.get('hits', query_results).get('hits', query_results):
-
+        log.info('str(doc)')
+        results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
-
             try:
                 snippet = ' '.join(highlight['highlight']['text.section_content']),
                 # snippet.encode(encoding='UTF-8',errors='strict')
-                mytuple = (doc['_source']['title'],
-                           doc['_score'],
-                           doc['_source']['source'],
-                           snippet[0],
-                           highlight['_source']['section_num'],
-                           highlight['_source']['section_title'],
-                           highlight['_score'])
-
-                results.append(mytuple)
-
+                mytuple = (
+                    doc['_source']['title'],
+                    doc['_score'],
+                    doc['_source']['source'],
+                    snippet[0],
+                    highlight['_source']['section_num'],
+                    highlight['_source']['section_title'],
+                    highlight['_score'],
+                    doc)
+                results.append(dict(list(zip(range(len(mytuple), mytuple)))))
             except:  # noqa
                 pass
-
     return results

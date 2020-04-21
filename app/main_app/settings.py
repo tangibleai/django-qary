@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'elastic_app',
 
     'django_elasticsearch_dsl',
+    'django_extensions',
     'rest_framework',
     'django_elasticsearch_dsl_drf'
 ]
