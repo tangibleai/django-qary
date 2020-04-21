@@ -7,6 +7,11 @@ from elasticsearch.exceptions import NotFoundError
 
 from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED
 
+from qary.clibot import CLIBot
+
+BOT = CLIBot(bots='glossary,faq'.split(','))
+
+
 log = logging.getLogger(__name__)
 
 CLIENT = None
@@ -51,11 +56,13 @@ def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
 
 def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
+    global BOT
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for doc in query_results.get('hits', query_results).get('hits', query_results):
         # log.debug('str(doc)')
         # results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
+
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             # snippet.encode(encoding='UTF-8',errors='strict')
@@ -69,4 +76,5 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                 highlight['_score'],
                 doc)
             results.append(dict(zip(range(len(mytuple)), mytuple)))
+            results[-1][7]['reply'] = BOT.reply(statement)
     return results
