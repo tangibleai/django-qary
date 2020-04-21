@@ -38,14 +38,14 @@ services:
     expose:
       - 6379
 
-  celery:
-    build: .
-    volumes:
-      - .:/src
-    container_name: cl01
-    command: celery -A server worker -l info
-    links:
-      - redis
+  # celery:
+  #   build: .
+  #   volumes:
+  #     - .:/src
+  #   container_name: cl01
+  #   command: celery -A server worker -l info
+  #   links:
+  #     - redis
 
   webapp:
     build: .
