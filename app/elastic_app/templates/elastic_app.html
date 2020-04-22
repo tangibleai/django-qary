@@ -38,12 +38,10 @@
                     {% if r.reply %}
                     <h6 class="card-title"> Duchess: {{ r.reply }}  </h6>
                     {% endif %}
-                    <h6 class="card-title"> {{ r.title }} | {{ r.section_name }}  </h6>
-                    <p class="card-text">
-                        {{ r.snippet | safe }}
-                        <br>Article score: {{ r.score }} | Section score: {{ r.section_score }}
-                    </p>
-                    <a href="{{ r.2 }}">Go to Wikipedia</a>
+                    <h6 class="card-title"> {{ r.title }} | {{ r.section_title }}  </h6>
+                    <p   class="card-text"> {{ r.snippet | safe }} </p>
+                    <p  class="card-score"> Article score: {{ r.score }} | Section score: {{ r.section_score }}</p>
+                    <a href="{{ r.source }}"> Go to Wikipedia</a>
                 </div class="card-body">
             </div class="card">
             {% endfor %}
