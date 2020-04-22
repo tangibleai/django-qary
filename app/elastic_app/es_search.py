@@ -31,7 +31,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_tim
         time.sleep(sleep_time)
         retry_timeout -= time.time() - t0
         CLIENT = connect_and_ping(host=host, port=port,
-                                  timeout=elastic_timeout, retry_timeout=retry_timeout,
+                                  elastic_timeout=elastic_timeout, retry_timeout=retry_timeout,
                                   sleep_time=min(max(sleep_time * 1.7, .1), 28))
     return CLIENT
 
