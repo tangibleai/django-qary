@@ -15,18 +15,22 @@ except ValueError:
     ES_PORT = 9200
 
 
-ES_CATEGORIES = (
-    'Marvel Comics',
-    'Machine learning',
+# default categories to index in Elasticsearch
+# values are some representative page IDs in each category
+# The first page ID, plus a middling value and the max value for id
+ES_CATEGORIES = {
+    'Marvel Comics': (534366, 21870933, 63211582)
+    'Machine learning': ()
     'Marvel Comics editors-in-chief',
     'American science fiction television series',
     'Science fiction television',
     'Natural language processing',
     'American comics writers',
     'Presidents of the United States',
+    'Barak Obama': 534366
     'Coronaviridae',
     'Pandemics',
-)
+}
 
 
 ES_SCHEMA = {
