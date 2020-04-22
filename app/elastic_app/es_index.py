@@ -42,7 +42,6 @@ dict_keys(['Marvel Comics', 'Big Two Comics', 'Bullpen Bulletins', 'Heroes World
 ...            text=content, references=references, index='wikipedia')
 
 """
-import time
 import logging
 
 import wikipediaapi
@@ -178,7 +177,9 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
     client = connect_and_ping(host=host, port=port)
     # exponential backoff for about a miniute to connect
 
+    pageids_indexed = {}
     for cat in categories:
+        pageids_indexed[cat] = []
         log.warning(f"Downloading Wikipedia Articles for Category:{cat}")
         # create empty index with predefined schema (data structure)
         # client.indices.create(index=index, body={"mappings": mapping})
@@ -211,8 +212,10 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
                         text=content,
                         references=references,
                         index=index)
+                    pageids_indexed[cat].append(page.pageid)
                 except Exception as err:
                     log.error(f"The following exception occured while trying to retrieve wikipedia 'Category:{cat}':\n   {err}")
+    return pageids_indexed
 
 
 def print_search_results(statement):
