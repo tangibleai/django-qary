@@ -19,20 +19,20 @@ log = logging.getLogger(__name__)
 CLIENT = None
 
 
-def connect_and_ping(host=ES_HOST, port=ES_PORT, timeout=None, retry_timeout=2):
+def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_timeout=2, sleep_time=.4):
     t0 = time.time()
     global CLIENT
     log.info("Connecting to ElasticSearch server at {host}:{port} using {CLIENT}...")
     if not CLIENT:
         log.info(f"Connecting to ElasticSearch server at {host}:{port}")
         CLIENT = Elasticsearch(f'{host}:{port}')
-    if CLIENT and not CLIENT.ping():
+    if CLIENT and not CLIENT.ping() and retry_timeout > 0:
         log.error(f"Unable to find ElasticSearch server at {host}:{port}\n    Trying for {retry_timeout}s more.")
-        CLIENT = Elasticsearch(f'{host}:{port}')
-        time.sleep(0.98765)
+        time.sleep(sleep_time)
         retry_timeout -= time.time() - t0
-        if retry_timeout > 0:
-            connect_and_ping(host=host, port=port, timeout=timeout, retry_timeout=retry_timeout)
+        CLIENT = connect_and_ping(host=host, port=port,
+                                  timeout=elastic_timeout, retry_timeout=retry_timeout,
+                                  sleep_time=min(max(sleep_time * 1.7, .1), 28))
     return CLIENT
 
 
@@ -60,15 +60,15 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global BOT
     query_results = search(text=statement, index=index, host=host, port=port)
-    bot_reply = ''
+    bot_reply = BOT.reply(statement)
     results = []
-    labels = 'title score source snippet section_num section_title highlight_score doc reply'.split()
+    labels = 'title score source snippet section_num section_title section_score reply'.split()
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
         # log.debug('str(doc)')
         # results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
         # use first 3 search results as context for qa bot, but only if looks like a question:
-        if statement.endswith('?') and i < 3:
-            bot_reply = bot_reply or BOT.reply(statement)
+        if statement.endswith('?') and i < 3 and 'qa' in BOT_PERSONALITIES:
+            bot_reply = BOT.reply(statement)
 
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
@@ -81,10 +81,8 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                 highlight['_source']['section_num'],
                 highlight['_source']['section_title'],
                 highlight['_score'],
-                doc,
                 bot_reply)
-            hit = dict(zip(range(len(mytuple)), mytuple))
-            hit.update(dict(zip(labels, mytuple)))
+            hit = dict(zip(labels, mytuple))
             results.append(hit)
             results[-1][7]['reply'] = bot_reply
     return results
