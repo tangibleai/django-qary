@@ -7,11 +7,12 @@ from elasticsearch.exceptions import NotFoundError
 
 from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED_UNIFIED
 
-from qary.skills import qa_bots
+import qary  # noqa
+from qary.skills.qa_bots import Bot
 
 # BOT_PERSONALITIES = ['qa']  # 'glossary,faq'.split(',')
 
-QABOT = qa_bots.Bot()
+QABOT = Bot()
 
 
 log = logging.getLogger(__name__)
@@ -91,11 +92,12 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             try:
+                log.warning(f'qary.__version__: {qary.__version__}')
+                log.warning(f'QABOT: {QABOT}')
+                log.warning(f'QABOT.__class__: {QABOT.__class__}')
+                log.warning(f'Bot.__bases__: {QABOT.__class__.__bases__}')
+                log.warning(f'QABOT.context: {QABOT.context}')
                 QABOT.reset_context(context={'doc': {'text': snippet}})
-                log.warning('QABOT: {QABOT}')
-                log.warning('QABOT.__class__: {QABOT.__class__}')
-                log.warning('QABOT.__bases__: {QABOT.__bases__}')
-                log.warning('QABOT.context: {QABOT.context}')
                 bot_reply = QABOT.reply(statement)
             except Exception as e:
                 log.warning(f'reset_context or .reply failed: {e}')
