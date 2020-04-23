@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 import os
-
+import pwd
+import logging
 
 LOGGING = {
     'version': 1,
@@ -39,7 +40,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ELASTIC_TEMPLATE_DIR = os.path.join(BASE_DIR, "elastic_app/templates")
 UPLOAD_TEMPLATE_DIR = os.path.join(BASE_DIR, "upload/templates")
 
-
+log = logging.getLogger(__name__)
+log.warning(f"os.getuid(): {os.getuid()}")
+log.warning(f"pwd.getpwuid(os.getuid()).pw_name): {pwd.getpwuid(os.getuid()).pw_name}")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
