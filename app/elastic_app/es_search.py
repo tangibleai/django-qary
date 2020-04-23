@@ -90,7 +90,16 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
-            bot_reply = QABOT.reply(statement, context=snippet)
+            try:
+                QABOT.reset_context(context={'doc': {'text': snippet}})
+                log.warning('QABOT: {QABOT}')
+                log.warning('QABOT.__class__: {QABOT.__class__}')
+                log.warning('QABOT.__bases__: {QABOT.__bases__}')
+                log.warning('QABOT.context: {QABOT.context}')
+                bot_reply = QABOT.reply(statement)
+            except Exception as e:
+                log.warning(f'reset_context or .reply failed: {e}')
+                bot_reply = ''
             hit = dict(
                 title=doc['_source']['title'],
                 score=doc['_score'],
