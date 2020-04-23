@@ -101,6 +101,21 @@ def ES_QUERY_NESTED(query):
             }
 
 
+def ES_QUERY_NESTED_UNIFIED(query):
+    return {"query": {"bool": {"should": [{"match": {"title": {'query': query, "boost": 3}}},
+                                          {"nested": {"path": "text", "query":
+                                                      {"bool": {"should": [{"term": {"text.section_num": 0}},
+                                                                           {"match": {"text.section_content": query}}]}},
+                                                      "inner_hits": {"highlight":
+                                                                     {"fields": {"text.section_content":
+                                                                                 {"number_of_fragments": 1,
+                                                                                  "fragment_size": 512,
+                                                                                  'order': "score"}}}}}}]
+                               }
+                      }
+            }
+
+
 def ES_QUERY_BROKE(query):
     return {"query": {"bool": {"should": [{"match": {"title": {'query': query, "boost": 3}}},
                                           {"nested": {"path": "text", "query":

@@ -5,7 +5,7 @@ import logging
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED
+from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED_UNIFIED
 
 from qary.clibot import CLIBot
 
@@ -36,7 +36,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_tim
     return CLIENT
 
 
-def search(text="coronavirus", bodyfun=ES_QUERY_NESTED, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def search(text="coronavirus", bodyfun=ES_QUERY_NESTED_UNIFIED, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     global CLIENT
     log.warn(f"Attempting to connect to '{host}:{port}'...")
@@ -62,19 +62,17 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global BOT
     query_results = search(text=statement, index=index, host=host, port=port)
-    bot_reply = BOT.reply(statement)
     results = []
     labels = 'title score source snippet section_num section_title section_score reply'.split()
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
         # log.debug('str(doc)')
         # results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
-        # use first 3 search results as context for qa bot, but only if looks like a question:
-        if statement.endswith('?') and i < 3 and 'qa' in BOT_PERSONALITIES:
-            bot_reply = BOT.reply(statement)
-
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             # snippet.encode(encoding='UTF-8',errors='strict')
+            bot_reply = ''
+            if statement.endswith('?') and i < 3 and 'qa' in BOT_PERSONALITIES:
+                bot_reply = BOT.reply(statement, context=snippet)
             mytuple = (
                 doc['_source']['title'],
                 doc['_score'],
@@ -86,4 +84,5 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                 bot_reply)
             hit = dict(zip(labels, mytuple))
             results.append(hit)
+
     return results
