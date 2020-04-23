@@ -50,12 +50,13 @@ RUN apt-get update && \
 # create the app user and its /home/app/
 RUN addgroup --system app && \
     adduser --system --group app
-RUN chown -R app:app $APP_HOME
 
-USER app
 RUN mkdir -p $APP_HOME/staticfiles/admin && \
     mkdir -p $APP_HOME/mediafiles && \
     mkdir -p $APP_HOME/midata
+RUN chown -R app:app $APP_HOME
+USER app
+
 WORKDIR $APP_HOME
 # COPY . .
 
