@@ -86,5 +86,4 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                 bot_reply)
             hit = dict(zip(labels, mytuple))
             results.append(hit)
-            results[-1][7]['reply'] = bot_reply
     return results
