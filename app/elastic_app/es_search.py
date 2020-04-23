@@ -70,9 +70,7 @@ def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             # snippet.encode(encoding='UTF-8',errors='strict')
-            bot_reply = ''
-            if statement.endswith('?') and i < 3 and 'qa' in BOT_PERSONALITIES:
-                bot_reply = BOT.reply(statement, context=snippet)
+
             mytuple = (
                 doc['_source']['title'],
                 doc['_score'],

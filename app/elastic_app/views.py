@@ -2,38 +2,43 @@ import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .es_search import search_tuples, BOT_PERSONALITIES
-# from elasticsearch import Elasticsearch
-# import requests
+
 import qary
-
-log = logging.warn(f"qary.__file__: {qary.__file__}")
-
-# log = logging.warn(f"qary.constants: {qary.constants}")
-
 from qary.constants import DATA_DIR  # noqa
-log = logging.warn(f"qary.constants.DATA_DIR: {DATA_DIR}")
+from elastic_app.es_search import search_tuples, BOT_PERSONALITIES
 
-# from qary import clibot  # noqa
+log = logging.getLogger(__name__)
 
-# log = logging.warn(f"qary.clibot.__file__: {clibot.__file__}")
-
-# Create your views here.
-
-# BOT = clibot.CLIBot(bots=['glossary'])
-
-
-def index(request):
-    return HttpResponse("<em>Elasticsearch project improved!</em>")
+log.warning(f"qary.__file__: {qary.__file__}")
+log.warning(f"qary.constants: {qary.constants}")
+log.warning(f"qary.constants.DATA_DIR: {DATA_DIR}")
 
 
 def test_connection(request):
-    results = search_tuples("When was stan Lee born?")
+    results = search_tuples("When was Stan Lee born?")
     ser_res = JsonResponse(results, safe=False)
     return HttpResponse(ser_res, content_type='application/json')
 
 
 def search_index(request):
+
+    results = []
+    question = ""
+    personalities = BOT_PERSONALITIES
+
+    if request.GET.get('query'):
+        question = request.GET['query']
+    personalities = request.GET.get('personalities', BOT_PERSONALITIES)
+
+    results = search_tuples(question)
+    context = {
+        'results': results,
+        'personalities': personalities,
+    }
+    return render(request, 'elastic_app.html', context)
+
+
+def search_qa(request):
 
     results = []
     question = ""
@@ -55,6 +60,6 @@ def qa_index(request):
     question = request.GET.get('question', "")
 
     results = search_tuples(text=question, index='')
-    context = {'results': results}  # , 'reply': BOT.reply('what is an allele?')}
+    context = {'results': results}
 
     return render(request, 'elastic_app.html', context)
