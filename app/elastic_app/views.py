@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 
 import qary
 from qary.constants import DATA_DIR  # noqa
-from elastic_app.es_search import find_snippets, find_answers, BOT_PERSONALITIES
+from elastic_app.es_search import find_snippets, find_answers  # , BOT_PERSONALITIES
 
 log = logging.getLogger(__name__)
 
@@ -24,11 +24,11 @@ def search_index(request):
 
     results = []
     question = ""
-    personalities = None  # BOT_PERSONALITIES
+    personalities = []  # BOT_PERSONALITIES
 
     if request.GET.get('query'):
         question = request.GET['query']
-    personalities = request.GET.get('personalities', BOT_PERSONALITIES)
+    personalities = request.GET.get('personalities', personalities)
 
     results = find_snippets(question)
     context = {
