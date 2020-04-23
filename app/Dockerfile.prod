@@ -56,7 +56,8 @@ RUN mkdir -p $APP_HOME/staticfiles/admin && \
     mkdir -p $APP_HOME/midata
 WORKDIR $APP_HOME
 # COPY . .
-# RUN chown -R app:app $APP_HOME
+
+# RUN chown -R app:app .
 # RUN chmod -R ug+rwx $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 
@@ -66,8 +67,12 @@ COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
+
+RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
+
 COPY . .
-# RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
+
+RUN chown -R app:app .
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
