@@ -45,8 +45,6 @@ dict_keys(['Marvel Comics', 'Big Two Comics', 'Bullpen Bulletins', 'Heroes World
 import logging
 
 import wikipediaapi
-# from slugify import slugify
-from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
 from .es_search import search_hits, connect_and_ping, CLIENT
@@ -55,77 +53,83 @@ from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
 log = logging.getLogger(__name__)
 
 
+def count_duplicates(client=None, page_id=None, index=''):
+    """ Check if the article (page_id) already exists in the database returning a total count """
+    if page_id is None:
+        log.error('page_id cannot be None')
+        return None
+    if not client:
+        client = connect_and_ping()
+        return None
+    try:
+        return client.search(
+            index=index,
+            body={"query":
+                  {"match":
+                   {"page_id": page_id}
+                   }})['hits']['total']['value']
+    except NotFoundError as err:
+        log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
+    return None
+
+
+def insert_article(client, page, index=ES_INDEX):
+    """ Add a new document to the index """
+    client = client or connect_and_ping()
+    section_dicts = parse_article(page)
+    references = get_references(section_dicts)
+    query_body = dict(title=page.title.strip(),
+                      page_id=page.pageid,
+                      source=page.fullurl,
+                      text=page.content,
+                      references=references,
+                      index=index)
+
+    if not count_duplicates(page.pageid):
+        log.warning(f"page_id: '{page.pageid}'\n    is not in index: '{index}'\n"
+                    f"    so adding it title: '{page.title}'")
+        try:
+            client.index(index=index, body=query_body)
+            log.info(f"Successfully added document '{page.title}' to index {index}.")
+        except Exception as error:
+            log.error(f"Error writing document page_id={page.pageid}:'{page.title}':\n    {error}")
+
+    else:
+        log.info(f"Article {page.title} is already in the database index {index}")
+
+
 class Document:
 
-    def __init__(self, title='', page_id=None, source='', text='',
-                 client=None, host=ES_HOST, port=ES_PORT):
-        self.client = client or connect_and_ping(host=host, port=port, retry_timeout=1.5)
-        self.title = title
-        self.page_id = page_id
-        self.source = source
-        self.text = text
-
-        if not self.client or not self.client.ping():
-            try:
-                self.client = Elasticsearch(f"{host}:{port}")
-            except ConnectionRefusedError:
-                log.error("Failed to connect to Elasticsearch on {host}:{port}")
-
-    def count_duplicates(self, page_id, index=''):
-        """ Check if the article already exists in the database returning a total count """
-        try:
-            return self.client.search(
-                index=index,
-                body={"query":
-                      {"match":
-                       {"page_id": page_id}
-                       }})['hits']['total']['value']
-        except NotFoundError as err:
-            log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
-        return None
-
-    def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
-        """ Add a new document to the index """
-
-        self.title = title
-        self.page_id = page_id
-        self.source = url
-        self.text = text
-        self.references = references
-        self.body = {'title': self.title,
-                     'page_id': self.page_id,
-                     'source': self.source,
-                     'text': self.text,
-                     'references': self.references}
-
-        # wait 6 minutes for es server to come up
-        if not self.count_duplicates(page_id):
-            log.warning(f"page_id: {self.page_id}\n    is not in index:{index}\n    so adding it title: {self.title}")
-            try:
-                self.client.index(index=index, body=self.body)
-                log.info(f'Successfully added document {self.title} to index {index}.')
-            except Exception as error:
-                log.error(f"Error writing document {page_id}={self.page_id}:{self.title}:\n    {error}")
-
-        else:
-            log.info(f"Article {self.title} is already in the database index {index}")
+    def __init__(self, page):
+        self.title = page.title
+        self.page_id = page.pageid
+        self.source = page.fullurl
+        self.text = page.text
+        self.sections = parse_article(page)
+        self.references = get_references(self.sections)
 
 
-def parse_article(article):
-    '''
-    Parse full wikipedia article into sections:
+def parse_article(page):
+    """ Parse full wikipedia article into sections:
+
     - content sections (summary, History, Applications, etc.)
     - reference section (References, Bibliography, See Also, Notes, etc)
-    '''
 
-    text = article.text
+    TODO: use sections within page instance from wikipediaapi? improve parsing regex?
+
+    Returns:
+        sections = {'section_num': 0, 'section_title': "Summary",
+        'section_content': text.split(f"\n\n{title}")[-1]}
+    """
+
+    text = page.text
     # get section titles for the existing sections
-    section_titles = [sec.title for sec in article.sections]
+    section_titles = [sec.title for sec in page.sections]
 
     # initiate the sections dictionary with a summary (0th section)
     sections = [{'section_num': 0,
                  'section_title': "Summary",
-                 'section_content': article.summary}]
+                 'section_content': page.summary}]
 
     for i, title in enumerate(section_titles[::-1]):
 
@@ -143,15 +147,14 @@ def parse_article(article):
     return sections
 
 
-def get_references(mylist):
-    '''
-    Get reference sections' headers
-    '''
+def get_references(section_dicts):
+    """ Get reference sections' headers """
     reference_list = []
     content_list = []
 
-    for d in mylist:
-        if d['section_title'].lower() in ' '.join(['see also references external links bibliography notes']):
+    WIKI_REFERENCE_SECTION_TITLES = tuple('see also,references,external,links,bibliography,notes'.split())
+    for d in section_dicts:
+        if d['section_title'].lower().strip() in WIKI_REFERENCE_SECTION_TITLES:
             reference_list.append(d)
         else:
             content_list.append(d)
@@ -181,20 +184,12 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
     for cat in categories:
         pageids_indexed[cat] = []
         log.warning(f"Downloading Wikipedia Articles for Category:{cat}")
-        # create empty index with predefined schema (data structure)
-        # client.indices.create(index=index, body={"mappings": mapping})
-        # log.info(f'New index {index} has been created')
-
-        # Retrieve Wikipedia article with list of article urls for the category `c`'''
-        # hits = search_hits(text=cat, index=index, host=host, port=port)
-        # if len(hits) >= 9:
-        #     continue
         try:
             cat = wiki_wiki.page(f"Category:{cat}")
         except Exception as err:
             log.error(f"The following exception occured while trying to retrieve wikipedia 'Category:{cat}':\n   {err}")
 
-        # Parse and add articles in the category to database
+        # Parse and add articles in the category to database, first checking to see that the pageid doesn't already exist
         for key in cat.categorymembers.keys():
             page = wiki_wiki.page(key)
             title = page.title.strip()
@@ -204,14 +199,8 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
                 text = parse_article(page)
                 content, references = get_references(text)
                 try:
-                    doc = Document(client=client, host=host, port=port)
-                    doc.insert(
-                        title=title,
-                        page_id=page.pageid,
-                        url=page.fullurl,
-                        text=content,
-                        references=references,
-                        index=index)
+                    # doc = Document(client=client, host=host, port=port)
+                    insert_article(client=client, page=page)
                     pageids_indexed[cat].append(page.pageid)
                 except Exception as err:
                     log.error(f"The following exception occured while trying to retrieve wikipedia 'Category:{cat}':\n   {err}")
