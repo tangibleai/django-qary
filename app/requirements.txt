@@ -9,6 +9,6 @@ gunicorn==20.0.4
 ipython==7.13.0
 psycopg2-binary==2.8.3
 python-slugify==4.0.0
-qary==0.4.0  # -e git+https://gitlab.com/tangibleai/qary.git#egg=qary
+qary==0.4.1  # -e git+https://gitlab.com/tangibleai/qary.git#egg=qary
 requests==2.23.0
 wikipedia-api==0.5.4
