@@ -37,20 +37,22 @@ FROM python:3.7-buster
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+ENV HOME=/home/app
+ENV PATH="${HOME}/.local/bin:${PATH}"
+ENV APP_HOME=/home/app/web
+
 # netcat for checking when services are up
 # libpq-dev for postgres header files (python psycopg package)
 RUN apt-get update && \
     apt-get install -y apt-utils && \
     apt-get install -y libpq-dev netcat
 
+RUN chown -R app:app $APP_HOME
 
 # create the app user and its /home/app/
 RUN addgroup --system app && \
     adduser --system --group app
 USER app
-ENV HOME=/home/app
-ENV PATH="${HOME}/.local/bin:${PATH}"
-ENV APP_HOME=/home/app/web
 RUN mkdir -p $APP_HOME/staticfiles/admin && \
     mkdir -p $APP_HOME/mediafiles && \
     mkdir -p $APP_HOME/midata
@@ -71,8 +73,6 @@ RUN pip install -r requirements.txt
 RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
 
 COPY . .
-
-RUN chown -R app:app .
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
