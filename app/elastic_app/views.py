@@ -3,15 +3,15 @@ import logging
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 
-import qary
-from qary.constants import DATA_DIR  # noqa
-from elastic_app.es_search import find_snippets, find_answers  # , BOT_PERSONALITIES
+# import qary
+# from qary.constants import DATA_DIR  # noqa
+from .es_search import find_snippets, find_answers  # , BOT_PERSONALITIES
 
 log = logging.getLogger(__name__)
 
-log.warning(f"qary.__file__: {qary.__file__}")
-log.warning(f"qary.constants: {qary.constants}")
-log.warning(f"qary.constants.DATA_DIR: {DATA_DIR}")
+# log.warning(f"qary.__file__: {qary.__file__}")
+# log.warning(f"qary.constants: {qary.constants}")
+# log.warning(f"qary.constants.DATA_DIR: {DATA_DIR}")
 
 
 def test_connection(request):

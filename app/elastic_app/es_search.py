@@ -60,7 +60,6 @@ def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
 
 def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
-    global BOT
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
@@ -68,7 +67,6 @@ def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
         # results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
-            # snippet.encode(encoding='UTF-8',errors='strict')
             bot_reply = ''
             hit = dict(
                 title=doc['_source']['title'],
@@ -86,7 +84,7 @@ def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
 
 def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
-    global BOT
+    global QABOT
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
