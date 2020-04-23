@@ -7,11 +7,11 @@ from elasticsearch.exceptions import NotFoundError
 
 from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED_UNIFIED
 
-from qary.clibot import CLIBot
+from qary.skills import qa_bots
 
-BOT_PERSONALITIES = ['qa']  # 'glossary,faq'.split(',')
+# BOT_PERSONALITIES = ['qa']  # 'glossary,faq'.split(',')
 
-BOT = CLIBot(bots=BOT_PERSONALITIES)
+QABOT = qa_bots.Bot()
 
 
 log = logging.getLogger(__name__)
@@ -58,29 +58,50 @@ def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     return raw_results.get('hits', {}).get('hits', [])
 
 
-def search_tuples(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global BOT
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
-    labels = 'title score source snippet section_num section_title section_score reply'.split()
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
         # log.debug('str(doc)')
         # results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
         for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             # snippet.encode(encoding='UTF-8',errors='strict')
+            bot_reply = ''
+            hit = dict(
+                title=doc['_source']['title'],
+                score=doc['_score'],
+                source=doc['_source']['source'],
+                snippet=snippet,
+                section_num=highlight['_source']['section_num'],
+                section_title=highlight['_source']['section_title'],
+                section_score=highlight['_score'],
+                reply=bot_reply)
+            results.append(hit)
 
-            mytuple = (
-                doc['_source']['title'],
-                doc['_score'],
-                doc['_source']['source'],
-                snippet,
-                highlight['_source']['section_num'],
-                highlight['_source']['section_title'],
-                highlight['_score'],
-                bot_reply)
-            hit = dict(zip(labels, mytuple))
+    return results
+
+
+def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+    """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
+    global BOT
+    query_results = search(text=statement, index=index, host=host, port=port)
+    results = []
+    for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
+        for highlight in doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {}):
+            snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
+            bot_reply = QABOT.reply(statement, context=snippet)
+            hit = dict(
+                title=doc['_source']['title'],
+                score=doc['_score'],
+                source=doc['_source']['source'],
+                snippet=snippet,
+                section_num=highlight['_source']['section_num'],
+                section_title=highlight['_source']['section_title'],
+                section_score=highlight['_score'],
+                reply=bot_reply)
             results.append(hit)
 
     return results

@@ -4,6 +4,6 @@ from django.urls import path
 
 urlpatterns = [
     path('connect/', views.test_connection, name='connection'),
-    path('qa/', views.search_qa, name="qa"),
+    path('qa/', views.answers_index, name="answers"),
     path('', views.search_index, name="search"),
 ]

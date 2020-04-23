@@ -25,11 +25,16 @@
 </head>
 <body>
 
-
-    <div class="heading">
-        <h4>Duchess Personalities: {{ personalities | safe }} </h4>
-    </div>
     <div class="container">
+        {% if personalities %}
+        <div class="heading">
+            <h5>Duchess Personalities: {{ personalities | safe }} </h5>
+        </div>
+        {% endif %}
+        <form class="form-inline">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
         <div class="search results">
         {% if results %}
             {% for r in results %}
