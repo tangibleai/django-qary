@@ -58,11 +58,11 @@ services:
   #     - redis
 
   db:
-    image: postgres
+    image: postgres:12.0-alpine
     volumes:
       - $HOME/midata/private/postgres_data2:/var/lib/postgresql/data/
     env_file:
-      - ./.env.prod
+      - ./.env.db.prod
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
@@ -85,7 +85,7 @@ services:
 
 
 volumes:
-  postgres_data2:
+  postgres_data:
   static_volume:
   media_volume:
   midata:
