@@ -60,7 +60,7 @@ services:
   db:
     image: postgres:12.0-alpine
     volumes:
-      - $HOME/midata/private/postgres_data2:/var/lib/postgresql/data/
+      - $HOME/midata/private/postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.db.prod
 
