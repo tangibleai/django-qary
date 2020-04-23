@@ -10,8 +10,12 @@ fi
 echo ''
 if [ "$1" == 'prod' ]
 then
-    MIDATA_HOST_PATH="$HOME/midata/public"
-    mkdir -p $MIDATA_HOST_PATH
+    MIDATA_HOST_PATH="$HOME/midata"
+    MIDATA_HOST_PATH_PRIVATE="MIDATA_HOST_PATH/private"
+    mkdir -p "$MIDATA_HOST_PATH/public"
+    mkdir -p "$MIDATA_HOST_PATH/private"
+    chmod -R ug+w ~/midata/private/static_volume/
+    chmod -R ug+w ~/midata/private/media_volume/
 
     echo "STOPPING ALL CONTAINERS!!!"
     docker-compose -f docker-compose.prod.yml down -v --remove-orphans
@@ -26,6 +30,9 @@ then
     echo ""
     echo "Collecting static in PROD containers for the webapp with exec web python manage.py collect static ..."
     docker-compose  -f docker-compose.prod.yml exec --user app web python manage.py collectstatic --no-input  # --clear
+
+    chmod -R a-w ~/midata/private/static_volume/
+    # chmod -R a+w ~/midata/private/media_volume/
 elif [ "$1" == 'wiki' ]
 then
     echo "Indexing wikipedia categories and testing Elasticsearch"
