@@ -20,6 +20,9 @@ then
     echo "Building and bringing up docker-compose.prod.yml docker images ..."
     docker-compose -f docker-compose.prod.yml up -d --build
 
+    # echo "Migrating DB in PROD containers with exec web python manage.py migrate (without --no-input)"
+    # docker-compose  -f docker-compose.prod.yml exec --user app web python -c 'import nltk; print(nltk.download("stopwords"))'
+
     echo "Migrating DB in PROD containers with exec web python manage.py migrate (without --no-input)"
     docker-compose  -f docker-compose.prod.yml exec --user app web python manage.py migrate
 
