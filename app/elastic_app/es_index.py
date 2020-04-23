@@ -167,20 +167,17 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
         categories (str or seq): sequence of strs or str with comma separated names of categories
         mapping (dict): elastic search schema (called "mapping" in Elasticsearch documentation)
     """
-
-    wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
     if isinstance(categories, str):
         categories = [c.strip() for c in categories.split(',')]
+        log.warning('Parsed string of comma-separated category names to get:\n    {categories}')
 
-    wiki_wiki = wikipediaapi.Wikipedia('en')  # LOL Buck Rogers
-
-    client = connect_and_ping(host=host, port=port)
+    wiki_wiki = wikipediaapi.Wikipedia('en')  # Nice, Buck Rogers
+    client = client or connect_and_ping(host=host, port=port)
     # exponential backoff for about a miniute to connect
 
     pageids_indexed = {}
     for cat in categories:
         pageids_indexed[cat] = []
-        log.warning(f"Downloading Wikipedia Articles for Category:{cat}")
         # create empty index with predefined schema (data structure)
         # client.indices.create(index=index, body={"mappings": mapping})
         # log.info(f'New index {index} has been created')
@@ -190,15 +187,18 @@ def search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA, index=ES_IND
         # if len(hits) >= 9:
         #     continue
         try:
-            cat = wiki_wiki.page(f"Category:{cat}")
+            wikicat = wiki_wiki.page(f"Category:{cat}")
         except Exception as err:
-            log.error(f"The following exception occured while trying to retrieve wikipedia 'Category:{cat}':\n   {err}")
-
+            log.error(
+                f"The following exception occured while trying to retrieve wikipedia page titled 'Category:{cat}':\n   {err}")
+            continue
+        wikikeys = wikicat.categorymembers.keys()
+        log.warning(f"Downloading {len(wikikeys)} Wikipedia Articles for category '{cat}'...")
         # Parse and add articles in the category to database
-        for key in cat.categorymembers.keys():
+        for key in wikikeys:
             page = wiki_wiki.page(key)
             title = page.title.strip()
-            log.info(f"Found Category:{cat}\n    Title: {title}\n    Key: {key}\n")
+            log.warning(f"Found Title: {title} in Category:{cat}\n    Key: {key}\n")
             if not title.lower().startswith('category:'):
                 log.warning(f"Adding page title {title} to index {index}")
                 text = parse_article(page)
