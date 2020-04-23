@@ -9,7 +9,7 @@ from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED
 
 from qary.clibot import CLIBot
 
-BOT_PERSONALITIES = 'glossary,faq'.split(',')
+BOT_PERSONALITIES = ['qa']  # 'glossary,faq'.split(',')
 
 BOT = CLIBot(bots=BOT_PERSONALITIES)
 
