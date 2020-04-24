@@ -90,11 +90,11 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        if i < 5 and time.time() - t0 < 10.:
+        if i < 5 and time.time() - t0 < 20.:
             for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
                 snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
                 bot_reply = ''
-                if j < 3 and time.time() - t0 < 10.:
+                if j < 2 and time.time() - t0 < 20.:
                     try:
                         log.warning(f'qary.__version__: {qary.__version__}')
                         log.warning(f'QABOT: {QABOT}')
@@ -107,6 +107,8 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                     except Exception as e:
                         log.warning(f'reset_context or .reply failed: {e}')
                         bot_reply = ''
+                else:
+                    break
                 hit = dict(
                     title=doc['_source']['title'],
                     score=doc['_score'],
@@ -117,5 +119,7 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                     section_score=highlight['_score'],
                     reply=bot_reply)
                 results.append(hit)
+            else:
+                break
 
     return results
