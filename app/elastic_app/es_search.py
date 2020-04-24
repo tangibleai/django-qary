@@ -90,11 +90,11 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        if i < 5 and time.time() - t0 < 20.:
+        if i < 10 and time.time() - t0 < 60.:
             for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
                 snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
                 bot_reply = ''
-                if j < 2 and time.time() - t0 < 20.:
+                if j < 5 and time.time() - t0 < 60.:
                     try:
                         log.warning(f'qary.__version__: {qary.__version__}')
                         log.warning(f'QABOT: {QABOT}')
