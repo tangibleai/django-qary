@@ -3,10 +3,12 @@
 <html lang="en">
     <nav class="navbar navbar-light bg-light justify-content-between">
         <a class="navbar-brand">Tangible AI</a>
+<!--
         <form class="form-inline">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
+-->
       </nav>
 <head>
     <meta charset="UTF-8">
@@ -28,7 +30,9 @@
     <div class="container">
         {% if personalities %}
         <div class="heading">
-            <h5>Duchess Personalities: {{ personalities | safe }} </h5>
+            <h6>Duchess Personalities:
+            {{ personalities | join:", " }}
+            </h6>
         </div>
         {% endif %}
         <form class="form-inline">
@@ -41,7 +45,7 @@
             <div class="card">
                 <div class="card-body">
                     {% if r.reply %}
-                    <h6 class="card-title"> Duchess: {{ r.reply }}  </h6>
+                    <h6 class="card-title"> {{ r.reply.0.1 }} ({{ r.reply.0.0 }})   </h6>
                     {% endif %}
                     <h6 class="card-title"> {{ r.title }} | {{ r.section_title }}  </h6>
                     <p   class="card-text"> {{ r.snippet | safe }} </p>

@@ -13,7 +13,22 @@ in `docker-compose.prod.yml` file
       - "$HOME/midata/private/media_volume:/home/app/web/mediafiles"
 ```
 
+one qary-docker droplet web container:
+
+```bash
+CONTAINERID=$(docker ps | grep -E '.*django-qary_web' | cut -c -12) && docker exec -it $CONTAINERID /bin/bash
+python -c 'import os; import pwd; print(pwd.getpwuid(os.getuid()).pw_name)'
+app
+```
+
+app user is uid 101
+
+or in wsgy.py:
+
+
 # Problem
+
+when you visit http://qary.ai/upload/ you get 500 error and permission denied in the logs:
 
 ```bash
 nginx_1  | 91.207.175.126 - - [23/Apr/2020:21:34:25 +0000] "POST /upload/ HTTP/1.1" 500 27 "http://qary.ai/upload/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:75.0) Gecko/20100101 Firefox/75.0" "-"
@@ -40,8 +55,9 @@ web_1    | PermissionError: [Errno 13] Permission denied: '/home/app/web/mediafi
 
 # Sledgehammer security
 
+inside `scripts/build.sh`:
+
 ```bash
-chmod -R a+w ~/midata/private/static_volume/
 
 # docker-compose ...
 
