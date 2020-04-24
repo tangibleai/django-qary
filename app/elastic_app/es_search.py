@@ -95,13 +95,11 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                 snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
                 bot_reply = ''
                 if j < 5 and time.time() - t0 < 60.:
+                    log.warning(snippet)
                     try:
-                        log.warning(f'qary.__version__: {qary.__version__}')
-                        log.warning(f'QABOT: {QABOT}')
-                        log.warning(f'QABOT.__class__: {QABOT.__class__}')
-                        log.warning(f'Bot.__bases__: {QABOT.__class__.__bases__}')
-                        log.warning(f'QABOT.context: {QABOT.context}')
-                        QABOT.reset_context(context={'doc': {'text': snippet}})
+                        QABOT.reset_context(
+                            context={'doc': {'text':
+                                             snippet.replace('<em>', '').replace('</em>', '')}})
                         log.warning(f'QABOT.context after reset: {QABOT.context}')
                         bot_reply = QABOT.reply(statement)
                     except Exception as e:
