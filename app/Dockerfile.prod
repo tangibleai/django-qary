@@ -71,7 +71,7 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
+RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git@0.4.4#egg=qary
 
 COPY . .
 
