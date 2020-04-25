@@ -133,7 +133,7 @@ DATABASES = {
 }
 
 DATABASES['default'] = DATABASES[os.environ.get('DATABASE', 'sqlite')]
-log.warning(DATABASES)
+log.info(f"DATABASES['default']['ENGINE']: {DATABASES['default']['ENGINE']}")
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 

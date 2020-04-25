@@ -37,7 +37,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_tim
     return CLIENT
 
 
-def search(text="coronavirus", bodyfun=ES_QUERY_NESTED_UNIFIED, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def search(text="", bodyfun=ES_QUERY_NESTED_UNIFIED, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     global CLIENT
     log.warn(f"Attempting to connect to '{host}:{port}'...")
@@ -120,7 +120,7 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
             break
         for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
-            bot_reply = ''
+            bot_replies = [(0, '')]
             if j > 10 or time.time() - t0 > 120.:
                 break
             try:
@@ -128,11 +128,11 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                     context={'doc': {'text':
                                      snippet.replace('<em>', '').replace('</em>', '')}})
                 log.warning(f'QABOT.context after reset: {QABOT.context}')
-                bot_reply = QABOT.reply(statement)
+                bot_replies = QABOT.reply(statement)
             except Exception as e:
                 log.error(f'reset_context or .reply failed: {e}')
-                bot_reply = ''
                 break
+            scored_reply = sorted(bot_replies)[-1]
             hit = dict(
                 title=doc['_source']['title'],
                 score=doc['_score'],
@@ -141,8 +141,9 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
                 section_num=highlight['_source']['section_num'],
                 section_title=highlight['_source']['section_title'],
                 section_score=highlight['_score'],
-                reply=bot_reply)
+                reply=scored_reply[1],
+                reply_score=scored_reply[0])
             results.append(hit)
 
-    results = sorted_dicts(results, key='reply', keyfun=len, reverse=True)
+    results = sorted_dicts(results, key='reply_score', keyfun=None, reverse=True)
     return results
