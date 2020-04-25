@@ -90,11 +90,11 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        if i < 10 and time.time() - t0 < 60.:
+        if i < 20 and time.time() - t0 < 120.:
             for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
                 snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
                 bot_reply = ''
-                if j < 5 and time.time() - t0 < 60.:
+                if j < 10 and time.time() - t0 < 120.:
                     log.warning(snippet)
                     try:
                         QABOT.reset_context(
