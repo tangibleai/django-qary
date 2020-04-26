@@ -83,6 +83,32 @@ def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     return results
 
 
+def sorted_dicts(iterable_of_dicts, key=None, reverse=False, keyfun=None):
+    """ Like sorted(), only `key` is the Mapping key used to look up the sort key
+
+    >>> results = [dict(zip('abc', 'a ab abc'.split()))]
+    >>> results.append(dict(zip('ab', 'yz wxyz'.split())))
+    >>> sorted_dicts(results, key='a')
+    [{'a': 'a', 'b': 'ab', 'c': 'abc'}, {'a': 'yz', 'b': 'wxyz'}]
+    >>> sorted_dicts(results, key='a', reverse=True)
+    [{'a': 'yz', 'b': 'wxyz'}, {'a': 'a', 'b': 'ab', 'c': 'abc'}]
+    >>> sorted_dicts(results, key='c', reverse=True, keyfun=len)
+    [{'a': 'a', 'b': 'ab', 'c': 'abc'}, {'a': 'yz', 'b': 'wxyz'}]
+    >>> sorted_dicts(results, key='a', reverse=True)
+    [{'a': 'yz', 'b': 'wxyz'}, {'a': 'a', 'b': 'ab', 'c': 'abc'}]
+    """
+    tuple_of_dicts = tuple(iterable_of_dicts)
+    if key is None:
+        iterable_of_dicts = tuple(iterable_of_dicts)
+        key = tuple(tuple_of_dicts[0].keys())[0]
+        log.warning('No key specified, so first key in first dictionary ({key}) was used as sort key.')
+    firstvalue = tuple_of_dicts[0][key]
+    valuetype = type(firstvalue)
+    keyfun = valuetype if keyfun is None else keyfun
+    nullvalue = float('nan') if isinstance(firstvalue, (float, int)) else ''
+    return sorted(tuple_of_dicts, key=lambda x: keyfun(x.get(key, nullvalue)), reverse=reverse)
+
+
 def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global QABOT
@@ -90,34 +116,33 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        if i < 10 and time.time() - t0 < 60.:
-            for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
-                snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
-                bot_reply = ''
-                if j < 5 and time.time() - t0 < 60.:
-                    log.warning(snippet)
-                    try:
-                        QABOT.reset_context(
-                            context={'doc': {'text':
-                                             snippet.replace('<em>', '').replace('</em>', '')}})
-                        log.warning(f'QABOT.context after reset: {QABOT.context}')
-                        bot_reply = QABOT.reply(statement)
-                    except Exception as e:
-                        log.warning(f'reset_context or .reply failed: {e}')
-                        bot_reply = ''
-                else:
-                    break
-                hit = dict(
-                    title=doc['_source']['title'],
-                    score=doc['_score'],
-                    source=doc['_source']['source'],
-                    snippet=snippet,
-                    section_num=highlight['_source']['section_num'],
-                    section_title=highlight['_source']['section_title'],
-                    section_score=highlight['_score'],
-                    reply=bot_reply)
-                results.append(hit)
-            else:
+        if i > 20 or time.time() - t0 > 120.:
+            break
+        for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
+            snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
+            bot_reply = ''
+            if j > 10 or time.time() - t0 > 120.:
                 break
+            try:
+                QABOT.reset_context(
+                    context={'doc': {'text':
+                                     snippet.replace('<em>', '').replace('</em>', '')}})
+                log.warning(f'QABOT.context after reset: {QABOT.context}')
+                bot_reply = QABOT.reply(statement)
+            except Exception as e:
+                log.error(f'reset_context or .reply failed: {e}')
+                bot_reply = ''
+                break
+            hit = dict(
+                title=doc['_source']['title'],
+                score=doc['_score'],
+                source=doc['_source']['source'],
+                snippet=snippet,
+                section_num=highlight['_source']['section_num'],
+                section_title=highlight['_source']['section_title'],
+                section_score=highlight['_score'],
+                reply=bot_reply)
+            results.append(hit)
 
+    results = sorted_dicts(results, key='reply', keyfun=len, reverse=True)
     return results
