@@ -45,7 +45,7 @@
             <div class="card">
                 <div class="card-body">
                     {% if r.reply %}
-                    <h6 class="card-title"> {{ r.reply.0.1 }} ({{ r.reply.0.0 }})   </h6>
+                    <h6 class="card-title"> {{ r.reply }} ({% widthratio r.reply_score 1 100 %})   </h6>
                     {% endif %}
                     <h6 class="card-title"> {{ r.title }} | {{ r.section_title }}  </h6>
                     <p   class="card-text"> {{ r.snippet | safe }} </p>
