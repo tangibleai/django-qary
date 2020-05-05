@@ -5,7 +5,7 @@ import logging
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED_UNIFIED
+from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_FLAT
 
 import qary  # noqa
 from qary.skills.qa_bots import Bot
@@ -37,7 +37,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_tim
     return CLIENT
 
 
-def search(text="coronavirus", bodyfun=ES_QUERY_NESTED_UNIFIED, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def search(text="coronavirus", bodyfun=ES_QUERY_FLAT, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     global CLIENT
     log.warn(f"Attempting to connect to '{host}:{port}'...")
