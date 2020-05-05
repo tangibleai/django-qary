@@ -109,19 +109,19 @@ def sorted_dicts(iterable_of_dicts, key=None, reverse=False, keyfun=None):
     return sorted(tuple_of_dicts, key=lambda x: keyfun(x.get(key, nullvalue)), reverse=reverse)
 
 
-def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=100, max_docs=20, max_sections=10):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global QABOT
     t0 = time.time()
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        if i > 20 or time.time() - t0 > 120.:
+        if i > max_docs or time.time() - t0 > timeout:
             break
         for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             bot_reply = ''
-            if j > 10 or time.time() - t0 > 120.:
+            if j > max_sections or time.time() - t0 > timeout:
                 break
             try:
                 QABOT.reset_context(
