@@ -25,10 +25,10 @@ then
     mkdir -p "$MIDATA_HOST_PATH_PRIVATE/postgres_data"
     mkdir -p "$MIDATA_HOST_PATH/public"
 
-    if [ -f "$MIDATA_HOST_PATH/public/models/nlpia-bot-data"] ;
-    then
+    # if [ -f "$MIDATA_HOST_PATH/public/models/qa/albert-large-v2-0.2.0.zip"] ;
+    # then
 
-    fi
+    # fi
 
     chown -R root:docker "$MIDATA_HOST_PATH"
     chmod -R ugo+rwx "$MIDATA_HOST_PATH"
