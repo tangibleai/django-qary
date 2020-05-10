@@ -3,12 +3,14 @@
 #
 FROM python:3.7-buster as builder
 
-WORKDIR /usr/src/app
-
+ENV APPNAME=djangoapp
 # prevent python interpreter from writing of .pyc files and buffering of stdout/err
 # equivalent to: `python -B -u`
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+
+WORKDIR /usr/src/$APPNAME
+
 
 # will complain about apt-utils so netcat won't be configured based on the terminal settings
 RUN apt-get update && apt-get install -y netcat postgresql-client gcc python3-dev musl-dev libpq-dev
@@ -19,12 +21,12 @@ RUN pip install flake8
 # lint (PEP8 style check)
 # F401=unused import ; E501=line too long
 # SEE: flake8.pycqa.org/en/2.6.0/warnings.html#error-codes
-# COPY . /usr/src/app/
+# COPY . /usr/src/$APPNAME/
 # RUN flake8 --exclude=env/ --ignore=E501,F401 .
 # RUN flake8 --max-line-length=150 --ignore=E501,F401 .
 COPY requirements.txt .
 
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/$APPNAME/wheels -r requirements.txt
 
 COPY . .
 
@@ -37,9 +39,10 @@ FROM python:3.7-buster
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-ENV HOME=/home/app
-ENV PATH="${HOME}/.local/bin:${PATH}"
-ENV APP_HOME=/home/app/web
+ENV APPNAME=djangoapp
+ENV HOME=/home/$APPNAME
+ENV PATH=$HOME/.local/bin:$PATH
+ENV APP_HOME=$HOME/web
 
 # netcat for checking when services are up
 # libpq-dev for postgres header files (python psycopg package)
@@ -47,26 +50,27 @@ RUN apt-get update && \
     apt-get install -y apt-utils && \
     apt-get install -y libpq-dev netcat
 
-# create the app user and its /home/app/
-RUN addgroup --system app && \
-    adduser --system --group app
+# create the djangoapp user and its /home/djangoapp/
+RUN addgroup --system $APPNAME && \
+    adduser --system --group $APPNAME
 
-RUN mkdir -p $APP_HOME/staticfiles/admin && \
-    mkdir -p $APP_HOME/mediafiles && \
-    mkdir -p $APP_HOME/midata
-RUN chown -R app:app $APP_HOME
-USER app
+RUN mkdir -p $APP_HOME/midata/public && \
+    mkdir -p $APP_HOME/midata/private/mediafiles && \
+    mkdir -p $APP_HOME/midata/private/staticfiles
+# RUN chown -R $APPNAME:$APPNAME $APP_HOME
+# USER $APPNAME
 
 WORKDIR $APP_HOME
 # COPY . .
 
-# RUN chown -R app:app .
+# RUN chown -R $APPNAME:$APPNAME .
 # RUN chmod -R ug+rwx $APP_HOME
 # RUN chmod -R ug+rwx $APP_HOME/staticfiles/admin
 
 
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
+# pip installs things in /usr/src/username/ ?
+COPY --from=builder /usr/src/$APPNAME/wheels /wheels
+COPY --from=builder /usr/src/$APPNAME/requirements.txt .
 RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
@@ -77,4 +81,4 @@ COPY . .
 
 COPY ./entrypoint.prod.sh $APP_HOME/entrypoint.prod.sh
 
-ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+ENTRYPOINT ["/home/$APPNAME/web/entrypoint.prod.sh"]
