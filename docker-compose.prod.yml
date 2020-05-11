@@ -9,6 +9,8 @@ services:
       - "$HOME/midata/private/static_volume:/home/app/web/staticfiles"
       - "$HOME/midata/private/media_volume:/home/app/web/mediafiles"
       - "$HOME/midata/public:/home/app/web/midata"
+      - "$HOME/midata/private/articles:/home/app/web/articles"
+
     ports:
       # external:internal (host:container)
       - "80:80"
@@ -23,6 +25,7 @@ services:
     volumes:
       - "$HOME/midata/private/static_volume:/home/app/web/staticfiles"
       - "$HOME/midata/private/media_volume:/home/app/web/mediafiles"
+      - "$HOME/midata/private/articles:/home/app/web/articles"
     expose: # only exposed to other local docker containers
       - 8000
     env_file:
@@ -86,8 +89,9 @@ services:
 
 volumes:
   postgres_data:
-  static_volume:
-  media_volume:
+  # static_volume:
+  # media_volume:
+  articles:
   midata:
   esdata:
 
