@@ -5,7 +5,7 @@ import logging
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
-from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_NESTED_UNIFIED
+from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX, ES_QUERY_FLAT
 
 import qary  # noqa
 from qary.skills.qa_bots import Bot
@@ -37,7 +37,7 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_tim
     return CLIENT
 
 
-def search(text="coronavirus", bodyfun=ES_QUERY_NESTED_UNIFIED, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def search(text="coronavirus", bodyfun=ES_QUERY_FLAT, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     global CLIENT
     log.warn(f"Attempting to connect to '{host}:{port}'...")
@@ -109,19 +109,19 @@ def sorted_dicts(iterable_of_dicts, key=None, reverse=False, keyfun=None):
     return sorted(tuple_of_dicts, key=lambda x: keyfun(x.get(key, nullvalue)), reverse=reverse)
 
 
-def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=100, max_docs=20, max_sections=10):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global QABOT
     t0 = time.time()
     query_results = search(text=statement, index=index, host=host, port=port)
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        if i > 20 or time.time() - t0 > 120.:
+        if i > max_docs or time.time() - t0 > timeout:
             break
         for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             bot_reply = ''
-            if j > 10 or time.time() - t0 > 120.:
+            if j > max_sections or time.time() - t0 > timeout:
                 break
             try:
                 QABOT.reset_context(
