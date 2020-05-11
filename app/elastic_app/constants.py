@@ -128,3 +128,28 @@ def ES_QUERY_BROKE(query):
                                }
                       }
             }
+
+
+def ES_QUERY_FLAT(query):
+    return {"query": {"bool": {"must_not": [{"term": {"section_title": "lists"}},
+                                            {"term": {"section_title": "links"}},
+                                            {"term": {"section_title": "other"}},
+                                            {"term": {"section_title": "bibliography"}},
+                                            {"term": {"section_title": "references"}},
+                                            {"term": {"section_title": "official"}},
+                                            ],
+                               "should": [{"multi_match": {"query": query, "fields": ["keywords^3", "text"]}}]}},
+            "highlight": {"fields": {"text": {"number_of_fragments": 3, 'order': "score", "fragment_size": 512}}}}
+
+
+def ES_QUERY_FLAT_STRING(query):
+    return {"query": {"query_string": {"query": query, "default_field": "text"}},
+            "highlight": {"fields": {"text": {"number_of_fragments": 3, 'order': "score", "fragment_size": 512}}}}
+
+
+def ES_QUERY_FLAT_SIMPLE_STRING(query):
+    return {"query": {"simple_query_string": {
+                      "query": query,
+                      "fields": ["keywords^5", "text"],
+                      "auto_generate_synonyms_phrase_query": False}},
+            "highlight": {"fields": {"text": {"number_of_fragments": 3, 'order': "score", "fragment_size": 512}}}}
