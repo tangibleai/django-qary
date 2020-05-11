@@ -120,6 +120,8 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=
             break
         for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
+            tags = doc.get('tags', doc)
+            snippet_modified = '\n'.join(tags, snippet)
             bot_reply = ''
             if j > max_sections or time.time() - t0 > timeout:
                 break
@@ -137,7 +139,7 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=
                 title=doc['_source']['title'],
                 score=doc['_score'],
                 source=doc['_source']['source'],
-                snippet=snippet,
+                snippet=snippet_modified,
                 section_num=highlight['_source']['section_num'],
                 section_title=highlight['_source']['section_title'],
                 section_score=highlight['_score'],
