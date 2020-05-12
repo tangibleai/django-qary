@@ -12,5 +12,6 @@ log = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA,
-                       index=ES_INDEX, host=ES_HOST, port=ES_PORT)
+    # search_insert_wiki(categories=ES_CATEGORIES, mapping=ES_SCHEMA,
+    #                    index=ES_INDEX, host=ES_HOST, port=ES_PORT)
+    def denorm_index(filedir=CACHE, index=ES_INDEX, host=ES_HOST, port=ES_PORT)

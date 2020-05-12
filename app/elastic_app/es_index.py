@@ -45,14 +45,29 @@ dict_keys(['Marvel Comics', 'Big Two Comics', 'Bullpen Bulletins', 'Heroes World
 import logging
 
 import wikipediaapi
+import pandas as pd
 # from slugify import slugify
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 
 from .es_search import search_hits, connect_and_ping, CLIENT
-from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT
+from .constants import ES_SCHEMA, ES_CATEGORIES, ES_INDEX, ES_HOST, ES_PORT, CACHE
 
 log = logging.getLogger(__name__)
+
+
+def denorm_index(filedir=CACHE, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
+
+    client = Elasticsearch(f"{host}:{port}")
+    unpickled_df = pd.read_pickle(filedir)
+    articles = unpickled_df.to_dict('records')
+
+    for article in articles:
+        try:
+            client.index(index=index, body=article)
+        except Exception as err:
+            pageid = article.get('page_id', "key page_id not found")
+            log.error(f'Failed to add article with page ID {pageid} to {index}', err)
 
 
 class Document:
