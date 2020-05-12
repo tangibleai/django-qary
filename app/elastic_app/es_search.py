@@ -117,7 +117,7 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=
     results = []
     for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
         if i > max_docs or time.time() - t0 > timeout:
-            breakls
+            break
         for j, highlight in enumerate(doc.get('inner_hits', doc).get('text', doc).get('hits', doc).get('hits', {})):
             snippet = ' '.join(highlight.get('highlight', {}).get('text.section_content', []))
             tags = doc.get('tags', doc)
