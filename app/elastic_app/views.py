@@ -5,7 +5,8 @@ from django.http import HttpResponse, JsonResponse
 
 # import qary
 # from qary.constants import DATA_DIR  # noqa
-from .es_search import find_snippets, find_answers  # , BOT_PERSONALITIES
+from .es_qa import find_answers  # , BOT_PERSONALITIES
+from .es_search import find_snippets
 
 log = logging.getLogger(__name__)
 

@@ -54,23 +54,20 @@ def search_hits(text, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
 
 def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
-    query_results = search(text=statement, index=index, host=host, port=port)
+    query_results = search_hits(text=statement, index=index, host=host, port=port)
     results = []
-    for i, doc in enumerate(query_results.get('hits', query_results).get('hits', query_results)):
-        # log.debug('str(doc)')
-        # results.append(('_title', 'doc._score', '_source', 'snippet', 'section_num', 'section_title', 'snippet._score', doc))
-        for highlight in doc.get('hits', doc).get('hits', {}):
-            snippet = ' '.join(highlight.get('highlight', {}).get('text', []))
-            bot_reply = ''
-            hit = dict(
-                title=doc['_source']['article_title'],
-                score=doc['_score'],
-                source=doc['_source']['source'],
-                snippet=snippet
-                section_num=highlight['_source']['section_number'],
-                section_title=highlight['_source']['section_title'],
-                section_score=highlight['_score'])
-            results.append(hit)
+    for i, doc in enumerate(query_results):
+        tags = doc.get('_source', {}).get('tags', '')
+        snippet = ' '.join(doc.get('highlight', {}).get('text', []))
+        tagged_snippet = '\n'.join([tags, snippet])
+        hit = dict(
+            title=doc['_source']['article_title'],
+            score=doc['_score'],
+            source=doc['_source']['source_url'],
+            snippet=tagged_snippet,
+            section_num=doc['_source']['section_number'],
+            section_title=doc['_source']['section_title'])
+        results.append(hit)
 
     return results
 
