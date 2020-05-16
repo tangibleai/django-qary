@@ -58,7 +58,7 @@ def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     results = []
     for i, doc in enumerate(query_results):
         tags = doc.get('_source', {}).get('tags', '')
-        snippet = ' '.join(doc.get('highlight', {}).get('text', []))
+        snippet = '\n'.join(doc.get('highlight', {}).get('text', []))
         tagged_snippet = '\n'.join([tags, snippet])
         hit = dict(
             title=doc['_source']['article_title'],

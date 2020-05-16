@@ -139,7 +139,7 @@ def ES_QUERY_FLAT(query):
                                             {"term": {"section_title": "official"}},
                                             ],
                                "should": [{"multi_match": {"query": query, "fields": ["keywords^3", "text"]}}]}},
-            "highlight": {"fields": {"text": {"number_of_fragments": 1, 'order': "score", "fragment_size": 512}}}}
+            "highlight": {"fields": {"text": {"number_of_fragments": 3, 'order': "score", "fragment_size": 512}}}}
 
 
 def ES_QUERY_FLAT_STRING(query):
