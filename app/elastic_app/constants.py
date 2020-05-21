@@ -144,7 +144,7 @@ def ES_QUERY_FLAT(query):
 
 def ES_QUERY_FLAT_STRING(query):
     return {"query": {"query_string": {"query": query, "default_field": "text"}},
-            "highlight": {"fields": {"text": {"number_of_fragments": 3, 'order': "score", "fragment_size": 512}}}}
+            "highlight": {"fields": {"text": {"number_of_fragments": 1, 'order': "score", "fragment_size": 512}}}}
 
 
 def ES_QUERY_FLAT_SIMPLE_STRING(query):
@@ -152,4 +152,4 @@ def ES_QUERY_FLAT_SIMPLE_STRING(query):
                       "query": query,
                       "fields": ["keywords^5", "text"],
                       "auto_generate_synonyms_phrase_query": False}},
-            "highlight": {"fields": {"text": {"number_of_fragments": 3, 'order': "score", "fragment_size": 512}}}}
+            "highlight": {"fields": {"text": {"number_of_fragments": 1, 'order': "score", "fragment_size": 512}}}}
