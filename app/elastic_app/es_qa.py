@@ -1,9 +1,8 @@
-# import os
 import time
 import logging
 
 from elastic_app.constants import ES_HOST, ES_PORT, ES_INDEX
-from elastic_app.es_search import find_snippets, sorted_dicts
+from elastic_app.es_search import find_snippets
 
 import qary  # noqa
 from qary.skills.qa_bots import Bot
@@ -17,7 +16,34 @@ log = logging.getLogger(__name__)
 CLIENT = None
 
 
-def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=100, max_docs=20, max_sections=10):
+def sorted_dicts(iterable_of_dicts, key=None, reverse=True, keyfun=None):
+    """ Like sorted(), only `key` is the Mapping key used to look up the sort key
+
+    >>> results = [dict(zip('abc', 'a ab abc'.split()))]
+    >>> results.append(dict(zip('ab', 'yz wxyz'.split())))
+    >>> sorted_dicts(results, key='a')
+    [{'a': 'a', 'b': 'ab', 'c': 'abc'}, {'a': 'yz', 'b': 'wxyz'}]
+    >>> sorted_dicts(results, key='a', reverse=True)
+    [{'a': 'yz', 'b': 'wxyz'}, {'a': 'a', 'b': 'ab', 'c': 'abc'}]
+    >>> sorted_dicts(results, key='c', reverse=True, keyfun=len)
+    [{'a': 'a', 'b': 'ab', 'c': 'abc'}, {'a': 'yz', 'b': 'wxyz'}]
+    >>> sorted_dicts(results, key='a', reverse=True)
+    [{'a': 'yz', 'b': 'wxyz'}, {'a': 'a', 'b': 'ab', 'c': 'abc'}]
+    """
+    tuple_of_dicts = tuple(iterable_of_dicts)
+    if key is None:
+        iterable_of_dicts = tuple(iterable_of_dicts)
+        key = tuple(tuple_of_dicts[0].keys())[0]
+        log.warning('No key specified, so first key in first dictionary ({key}) was used as sort key.')
+    # firstvalue = tuple_of_dicts[0][key]
+    # valuetype = type(firstvalue)
+    # keyfun = valuetype if keyfun is None else keyfun
+    # nullvalue = float('nan') if isinstance(firstvalue, (float, int)) else ''
+    # return sorted(tuple_of_dicts, key=lambda x: keyfun(x.get(key, nullvalue)), reverse=reverse)
+    return sorted(tuple_of_dicts, key=lambda x: x[key], reverse=reverse)
+
+
+def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=100, max_docs=50, max_sections=10):
     """ Query Elasticsearch using statement as query string and format results as list of 8-tuples """
     global QABOT
     t0 = time.time()
@@ -35,10 +61,11 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=
             hit['reply'] = bot_reply[0][1]
             hit['reply_score'] = bot_reply[0][0]
         except Exception as e:
-            log.error(f'reset_context or .reply failed: {e}')
             hit['reply'] = ''
-            hit['reply_score'] = 0
+            hit['reply_score'] = float(0)
+            log.error(f'reset_context or .reply failed: {e}')
+            pass
         results.append(hit)
 
-    # results = sorted_dicts(results, key='reply', keyfun=len, reverse=True)
+    results = sorted_dicts(results, key='reply_score', keyfun=len, reverse=True)
     return results

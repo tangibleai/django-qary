@@ -58,41 +58,16 @@ def find_snippets(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     results = []
     for i, doc in enumerate(query_results):
         tags = doc.get('_source', {}).get('tags', '')
-        snippet = '\n'.join(doc.get('highlight', {}).get('text', []))
-        tagged_snippet = '\n'.join([tags, snippet])
-        hit = dict(
-            title=doc['_source']['article_title'],
-            score=doc['_score'],
-            source=doc['_source']['source_url'],
-            snippet=tagged_snippet,
-            section_num=doc['_source']['section_number'],
-            section_title=doc['_source']['section_title'])
-        results.append(hit)
+        snippets = doc.get('highlight', {}).get('text', [])
+        for snippet in snippets:
+            tagged_snippet = '\n'.join([tags, snippet])
+            hit = dict(
+                title=doc['_source']['article_title'],
+                score=doc['_score'],
+                source=doc['_source']['source_url'],
+                snippet=tagged_snippet,
+                section_num=doc['_source']['section_number'],
+                section_title=doc['_source']['section_title'])
+            results.append(hit)
 
     return results
-
-
-def sorted_dicts(iterable_of_dicts, key=None, reverse=False, keyfun=None):
-    """ Like sorted(), only `key` is the Mapping key used to look up the sort key
-
-    >>> results = [dict(zip('abc', 'a ab abc'.split()))]
-    >>> results.append(dict(zip('ab', 'yz wxyz'.split())))
-    >>> sorted_dicts(results, key='a')
-    [{'a': 'a', 'b': 'ab', 'c': 'abc'}, {'a': 'yz', 'b': 'wxyz'}]
-    >>> sorted_dicts(results, key='a', reverse=True)
-    [{'a': 'yz', 'b': 'wxyz'}, {'a': 'a', 'b': 'ab', 'c': 'abc'}]
-    >>> sorted_dicts(results, key='c', reverse=True, keyfun=len)
-    [{'a': 'a', 'b': 'ab', 'c': 'abc'}, {'a': 'yz', 'b': 'wxyz'}]
-    >>> sorted_dicts(results, key='a', reverse=True)
-    [{'a': 'yz', 'b': 'wxyz'}, {'a': 'a', 'b': 'ab', 'c': 'abc'}]
-    """
-    tuple_of_dicts = tuple(iterable_of_dicts)
-    if key is None:
-        iterable_of_dicts = tuple(iterable_of_dicts)
-        key = tuple(tuple_of_dicts[0].keys())[0]
-        log.warning('No key specified, so first key in first dictionary ({key}) was used as sort key.')
-    firstvalue = tuple_of_dicts[0][key]
-    valuetype = type(firstvalue)
-    keyfun = valuetype if keyfun is None else keyfun
-    nullvalue = float('nan') if isinstance(firstvalue, (float, int)) else ''
-    return sorted(tuple_of_dicts, key=lambda x: keyfun(x.get(key, nullvalue)), reverse=reverse)
