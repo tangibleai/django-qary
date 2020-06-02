@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 CLIENT = None
 
 
-def sorted_dicts(iterable_of_dicts, key=None, reverse=True, keyfun=None):
+def sorted_dicts(iterable_of_dicts, key=None, reverse=True):
     """ Like sorted(), only `key` is the Mapping key used to look up the sort key
 
     >>> results = [dict(zip('abc', 'a ab abc'.split()))]
@@ -35,11 +35,6 @@ def sorted_dicts(iterable_of_dicts, key=None, reverse=True, keyfun=None):
         iterable_of_dicts = tuple(iterable_of_dicts)
         key = tuple(tuple_of_dicts[0].keys())[0]
         log.warning('No key specified, so first key in first dictionary ({key}) was used as sort key.')
-    # firstvalue = tuple_of_dicts[0][key]
-    # valuetype = type(firstvalue)
-    # keyfun = valuetype if keyfun is None else keyfun
-    # nullvalue = float('nan') if isinstance(firstvalue, (float, int)) else ''
-    # return sorted(tuple_of_dicts, key=lambda x: keyfun(x.get(key, nullvalue)), reverse=reverse)
     return sorted(tuple_of_dicts, key=lambda x: x[key], reverse=reverse)
 
 
