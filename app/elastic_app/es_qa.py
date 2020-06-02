@@ -62,5 +62,5 @@ def find_answers(statement, index=ES_INDEX, host=ES_HOST, port=ES_PORT, timeout=
             pass
         results.append(hit)
 
-    results = sorted_dicts(results, key='reply_score', keyfun=len, reverse=True)
+    results = sorted_dicts(results, key='reply_score', reverse=True)
     return results
