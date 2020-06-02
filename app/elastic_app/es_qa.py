@@ -32,7 +32,6 @@ def sorted_dicts(iterable_of_dicts, key=None, reverse=True):
     """
     tuple_of_dicts = tuple(iterable_of_dicts)
     if key is None:
-        iterable_of_dicts = tuple(iterable_of_dicts)
         key = tuple(tuple_of_dicts[0].keys())[0]
         log.warning('No key specified, so first key in first dictionary ({key}) was used as sort key.')
     return sorted(tuple_of_dicts, key=lambda x: x[key], reverse=reverse)
