@@ -7,6 +7,7 @@ from django.http import HttpResponse, JsonResponse
 # from qary.constants import DATA_DIR  # noqa
 from .es_qa import find_answers  # , BOT_PERSONALITIES
 from .es_search import find_snippets
+from .nboost_proxy import rerank, answers_with_nboost
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +21,11 @@ def test_connection(request):
     ser_res = JsonResponse(results, safe=False)
     return HttpResponse(ser_res, content_type='application/json')
 
+
+def test_nboost(request):
+    results = rerank(query="When was Stan Lee born?")
+    ser_res = JsonResponse(results, safe=False)
+    return HttpResponse(ser_res, content_type='application/json')
 
 def search_index(request):
 
@@ -54,3 +60,19 @@ def answers_index(request):
         'personalities': personalities
     }
     return render(request, 'elastic_app.html', context)
+
+def answers_nboost(request):
+
+    results = []
+    question = ""
+    personalities = ['qa']  # BOT_PERSONALITIES
+
+    if request.GET.get('query'):
+        question = request.GET['query']
+
+    results = answers_with_nboost(question)
+    context = {
+        'results': results,
+        'personalities': personalities
+    }
+    return render(request, 'nboost.html', context)

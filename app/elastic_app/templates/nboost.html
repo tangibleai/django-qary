@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- {% load static %} -->
+<html lang="en">
+    <nav class="navbar navbar-light bg-light justify-content-between">
+        <a class="navbar-brand">Tangible AI</a>
+<!--
+        <form class="form-inline">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+-->
+      </nav>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <!-- <link rel="stylesheet" href='{% static "css/mystyle.css" %}'> -->
+</head>
+<body>
+
+    <div class="container">
+        {% if personalities %}
+        <div class="heading">
+            <h6>Duchess Personalities:
+            {{ personalities | join:", " }}
+            </h6>
+        </div>
+        {% endif %}
+        <form class="form-inline">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+        <div class="search results">
+        {% if results %}
+            {% for r in results %}
+            <div class="card">
+                <div class="card-body">
+                    {% if r.reply %}
+                    <h6 class="card-title"> {{ r.reply }} ({% widthratio r.reply_score 1 100 %})   </h6>
+                    {% endif %}
+                    <h6 class="card-title"> {{ r.article_title }} | {{ r.section_title }}  </h6>
+                    <p   class="card-text"> {{ r.text | safe }} </p>
+                    <p  class="card-score"> Score: {{ r.score }} | {{ r.nboost_score }} </p>
+                    <a href="{{ r.source_url }}"> Go to Wikipedia</a>
+                </div class="card-body">
+            </div class="card">
+            {% endfor %}
+        {% else %}
+              <p>NOTHING FOUND</p>
+        {% endif %}
+        </div class="search results">
+    </div>
+
+</body>
+</html>
