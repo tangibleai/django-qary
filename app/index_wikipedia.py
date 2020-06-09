@@ -6,7 +6,7 @@ import logging
 
 from elastic_app.constants import CACHE, ES_INDEX, ES_HOST, ES_PORT
 # from elastic_app.es_search import search
-from elastic_app.es_index_only import denorm_index
+from elastic_app.es_index import denorm_index
 
 log = logging.getLogger(__name__)
 

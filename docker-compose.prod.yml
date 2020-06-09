@@ -21,13 +21,15 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.prod
-    command: ['gunicorn', 'main_app.wsgi:application', '-t', '240', '-b', '0.0.0.0:8000']
+    command: ['gunicorn', 'main_app.wsgi:application', '-t', '240', '-b', '0.0.0.0:8100']
     volumes:
       - "$HOME/midata/private/static_volume:/home/app/web/staticfiles"
       - "$HOME/midata/private/media_volume:/home/app/web/mediafiles"
       - "$HOME/midata/private/articles:/home/app/web/articles"
     expose: # only exposed to other local docker containers
-      - 8000
+      - 8100
+      # - 8000git
+
     env_file:
       - ./.env.prod
     depends_on:
@@ -85,6 +87,14 @@ services:
       - 9300
     # ports:
     #   - 9200:9200
+
+  nboost:
+    image: koursaros/nboost:latest-pt
+    container_name: nboost
+    expose:
+      - 8000
+    depends_on:
+      - es
 
 
 volumes:

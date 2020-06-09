@@ -7,7 +7,9 @@ log = logging.getLogger(__name__)
 ES_HOST = os.environ.get('ES_HOST', 'es').strip()  # or localhost
 ES_PORT = os.environ.get('ES_PORT', '9200')  # or 9200
 ES_INDEX = 'wikipedia'
-CACHE = '/home/app/web/articles/articles_with_keywords.pkl'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ARTICLES_DIR = os.path.join(BASE_DIR, "web/articles")
+CACHE = os.path.join(ARTICLES_DIR, 'articles_with_keywords.pkl')
 
 try:
     ES_PORT = int(ES_PORT)
