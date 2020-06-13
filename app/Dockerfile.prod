@@ -40,6 +40,7 @@ ENV PYTHONUNBUFFERED 1
 ENV HOME=/home/app
 ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV APP_HOME=/home/app/web
+ENV BRANCH="$(git symbolic-ref --short HEAD)"
 
 # netcat for checking when services are up
 # libpq-dev for postgres header files (python psycopg package)
@@ -71,7 +72,7 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary
+# RUN pip install --editable git+https://gitlab.com/tangibleai/qary.git#egg=qary@"${BRANCH}"
 
 COPY . .
 
