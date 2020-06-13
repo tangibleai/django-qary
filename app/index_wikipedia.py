@@ -7,9 +7,12 @@ import logging
 from elastic_app.constants import CACHE, ES_INDEX, ES_HOST, ES_PORT
 # from elastic_app.es_search import search
 from elastic_app.es_index_only import denorm_index
+from qary.etl import download_if_necessary
+
 
 log = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    denorm_index(filedir=CACHE, index=ES_INDEX, host=ES_HOST, port=ES_PORT)
+    filepath = download_if_necessary('wikipedia_articles')
+    denorm_index(filedir=filepath, index=ES_INDEX, host=ES_HOST, port=ES_PORT)

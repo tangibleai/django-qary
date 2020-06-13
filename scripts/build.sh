@@ -52,7 +52,7 @@ then
     docker-compose -f docker-compose.dev.yml exec web python manage.py migrate
 
     echo ""
-    echo "Starting development containers for the webapp at http://localhost:8000/ ..."
+    echo "Starting development containers for the webapp at http://localhost:8100/ ..."
     docker-compose -f docker-compose.dev.yml exec web python manage.py collectstatic --no-input --clear
 elif [ "$1" == 'stop' ]
 then

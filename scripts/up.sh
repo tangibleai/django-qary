@@ -32,7 +32,7 @@ then
     docker-compose -f docker-compose.def.yml exec web python manage.py migrate upload --no-input
 
     echo ''
-    echo "Starting development containers for the webapp at http://localhost:8000/ ..."
+    echo "Starting development containers for the webapp at http://localhost:8100/ ..."
     docker-compose -e MIDATA_HOST_PATH=$MIDATA_HOST_PATH -f docker-compose.dev.yml exec web python manage.py collectstatic --no-input --clear
 elif [ "$1" == 'stop' ]
 then
