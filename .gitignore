@@ -16,3 +16,6 @@ app/mediafiels/*
 # cache folders
 __pycache__
 .vscode
+
+#gmail_client.py file perhaps when username and password is input
+.DS_Store
