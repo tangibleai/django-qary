@@ -33,11 +33,11 @@ def connect_and_ping(host=ES_HOST, port=ES_PORT, elastic_timeout=None, retry_tim
 def search(text="coronavirus", bodyfun=ES_QUERY_FLAT, index=ES_INDEX, host=ES_HOST, port=ES_PORT):
     """ Full text search within an ElasticSearch index (''=all indexes) for the indicated text """
     global CLIENT
-    log.warn(f"Attempting to connect to '{host}:{port}'...")
+    log.warning(f"Attempting to connect to '{host}:{port}'...")
     client = (CLIENT or
               connect_and_ping(host=host, port=port, elastic_timeout=None, retry_timeout=2) or
               Elasticsearch(f'{host}:{port}'))
-    log.warn(f"Attempting to search for text='{text}'\n in index='{index}' using client={client}\n")
+    log.warning(f"Attempting to search for text='{text}'\n in index='{index}' using client={client}\n")
     try:
         return client.search(body=bodyfun(query=text), index=index)
     except NotFoundError as e:

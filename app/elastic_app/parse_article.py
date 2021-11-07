@@ -81,7 +81,7 @@ class Document:
                        {"page_id": page_id}
                        }})['hits']['total']['value']
         except NotFoundError as err:
-            log.warn(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
+            log.warning(f"{err}: Page_id '{page_id}' not found in index '{index}', or index does not exist.")
         return None
 
     def insert(self, title, page_id, url='', text='', references=[], index=ES_INDEX):
